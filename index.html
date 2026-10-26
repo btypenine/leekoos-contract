@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>리쿠스 근로계약서</title>
+<style>
+  :root{--navy:#1f3864;--ink:#1b1f27;--muted:#5b6474;--line:#d5dae3;--bg:#eef1f5;--panel:#fff;--accent:#2f5aa8;--danger:#b42318;--ok:#167a3e;--warn:#9a6700}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:var(--ink);background:var(--bg);font-size:14px}
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit;font-size:14px}
+  .hidden{display:none !important}
+
+  /* login */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+  .login-card{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:32px 28px;box-shadow:0 10px 30px rgba(20,30,60,.08)}
+  .login-card img{height:38px;display:block;margin:0 auto 14px}
+  .login-card h1{font-size:18px;text-align:center;margin:0 0 4px;color:var(--navy)}
+  .login-card p{font-size:12.5px;text-align:center;color:var(--muted);margin:0 0 22px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid #c9d8f5;border-color:var(--accent)}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 14px;border-radius:8px;font-size:13.5px}
+  .btn:hover{background:#f4f6fa}
+  .btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+  .btn.primary:hover{background:#17294a}
+  .btn.go{background:var(--ok);border-color:var(--ok);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.wide{width:100%;padding:11px}
+  .err{color:var(--danger);font-size:12.5px;min-height:18px;margin-top:8px;text-align:center}
+
+  /* app */
+  #app{min-height:100vh}
+  .topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border-bottom:1px solid var(--line);padding:10px 16px}
+  .topbar img{height:26px}
+  .topbar .title{font-weight:700;color:var(--navy);margin-right:auto}
+  .stage{font-size:12px;padding:3px 9px;border-radius:999px;background:#e8eef9;color:var(--navy);font-weight:700}
+  .layout{display:grid;grid-template-columns:370px 1fr;gap:18px;padding:18px;align-items:start}
+  .side{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;position:sticky;top:66px;max-height:calc(100vh - 84px);overflow:auto}
+  .side h2{font-size:14px;margin:0 0 12px;color:var(--navy)}
+  .sec{font-size:12px;font-weight:700;color:var(--muted);margin:16px 0 8px;padding-top:12px;border-top:1px dashed var(--line)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+  .steps{margin:0 0 12px;padding-left:18px;font-size:13px;line-height:1.7}
+  .note{font-size:12.5px;line-height:1.6;padding:10px 12px;border-radius:8px;margin-bottom:12px}
+  .note.info{background:#eef3fc;color:#1d3c78}
+  .note.ok{background:#e7f6ec;color:var(--ok);font-weight:700}
+  .note.bad{background:#fdecea;color:var(--danger);font-weight:700}
+  .note.warn{background:#fff6dc;color:var(--warn)}
+  .radio{display:flex;gap:14px;margin-bottom:8px;font-size:13px}
+  .radio label{display:flex;align-items:center;gap:5px;cursor:pointer}
+  .padwrap{border:1px dashed #9aa6bb;border-radius:10px;background:#fbfcfe;position:relative}
+  .padwrap canvas{display:block;width:100%;height:150px;touch-action:none;cursor:crosshair}
+  .padwrap .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#a3acbb;font-size:13px;pointer-events:none}
+  .padbar{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+  .seal-preview{display:flex;align-items:center;gap:12px;margin:8px 0}
+  .seal-preview img{width:72px;height:72px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;margin:12px 0}
+  .check input{margin-top:3px}
+  .preview{display:flex;flex-direction:column;align-items:center;gap:18px;min-width:0}
+
+  /* document */
+  .page{width:210mm;min-height:297mm;background:#fff;box-shadow:0 4px 18px rgba(20,30,60,.10);padding:14mm 16mm 18mm;position:relative}
+  .doc-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #bfbfbf;padding-bottom:6px;margin-bottom:14px}
+  .doc-head img.l{height:30px}.doc-head img.r{height:20px}
+  .docno{font-size:8.5pt;color:#666;text-align:right;margin:-8px 0 6px}
+  .doc-foot{position:absolute;left:16mm;right:16mm;bottom:8mm;display:flex;justify-content:space-between;font-size:9.5pt;color:#555;border-top:1px solid #bfbfbf;padding-top:4px}
+  .doc{font-size:10pt;line-height:1.6;color:#111}
+  .doc h1{text-align:center;font-size:19pt;letter-spacing:.35em;margin:6px 0 16px;text-decoration:underline;text-underline-offset:6px}
+  .doc h3{font-size:10.5pt;text-align:center;margin:14px 0 6px}
+  .doc .label{font-weight:700;margin:8px 0 4px}
+  .doc table.party{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:9.5pt}
+  .doc table.party td{border:1px solid #333;padding:5px 8px;vertical-align:middle}
+  .doc table.party td.h{background:#f2f2f2;text-align:center;font-weight:600;white-space:nowrap}
+  .doc .lead{text-align:center;font-weight:700;margin:10px 0 4px}
+  .doc .clause p{margin:0 0 4px}
+  .doc .pre{white-space:pre-wrap}
+  .doc .salary{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-weight:600;margin:4px 0 6px}
+  .doc .sign{margin-top:22px}
+  .doc .sign .date{text-align:center;font-weight:700;margin:14px 0 18px}
+  .doc .party-sign{margin:0 0 22px 0;line-height:2.1}
+  .sigspot{position:relative;display:inline-block;padding-right:6px}
+  .sigspot img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-height:58px;max-width:150px;pointer-events:none}
+  .sigspot img.seal{max-height:62px;max-width:62px;opacity:.92}
+  .doc .oath-head{margin:6px 0 14px;line-height:2}
+  .doc .indent{padding-left:1.2em}
+  .doc .to{text-align:center;font-weight:700;font-size:12pt;margin-top:26px}
+  .missing{background:#fff3c4}
+
+  @media (max-width:1100px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static;max-height:none}
+    .preview{overflow-x:auto;align-items:flex-start}
+  }
+
+  @page{
+    size:A4;margin:13mm 15mm 17mm;
+    @bottom-left{content:"www.leekoos.com";font-size:8.5pt;color:#555;font-family:"Malgun Gothic",sans-serif}
+    @bottom-center{content:"경기도 안산시 단원구 산단로 325, 스마트스퀘어 344호  ·  " counter(page);font-size:8.5pt;color:#555;font-family:"Malgun Gothic",sans-serif}
+    @bottom-right{content:"Tel. 1666-4514";font-size:8.5pt;color:#555;font-family:"Malgun Gothic",sans-serif}
+  }
+  @media print{
+    body{background:#fff}
+    .topbar,.side,#login{display:none !important}
+    .layout{display:block;padding:0}
+    .preview{display:block;gap:0}
+    .page{box-shadow:none;margin:0;width:auto;min-height:0;padding:0;page-break-after:always;break-after:page}
+    .page:last-child{page-break-after:auto;break-after:auto}
+    .doc-foot{display:none}
+    .missing{background:none}
+    .doc h3,.doc .label{break-after:avoid;page-break-after:avoid}
+    .clause,.party-sign{break-inside:avoid;page-break-inside:avoid}
+    .page.oath .doc{font-size:9.4pt;line-height:1.5}
+    .page.oath .doc h1{margin:2px 0 10px}
+    .page.oath .sign .date{margin:8px 0 8px}
+    .page.oath .to{margin-top:12px}
+  }
+
+  /* v3: home + mobile */
+  #home{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+  .home-card{width:100%;max-width:440px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px 24px;box-shadow:0 10px 30px rgba(20,30,60,.08);text-align:center}
+  .home-card img{height:40px;margin-bottom:12px}
+  .home-card h1{font-size:20px;color:var(--navy);margin:0 0 6px}
+  .home-card p{font-size:13px;color:var(--muted);margin:0 0 22px;line-height:1.6}
+  .home-btn{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  .home-btn b{display:block;font-size:16px;color:var(--navy);margin-bottom:3px}
+  .home-btn span{font-size:12.5px;color:var(--muted)}
+  .home-btn.main{border:2px solid var(--ok);background:#f2fbf5}
+  .home-btn.main b{color:var(--ok)}
+  .linkbtn{display:block;text-align:center;text-decoration:none;margin-top:10px}
+  .back{font-size:12.5px}
+  @media (max-width:1100px){
+    .layout{padding:10px;gap:12px}
+    .layout.signmode .side{order:2}
+    .layout.signmode .preview{order:1}
+    .topbar{padding:8px 10px}
+  }
+  @media screen and (max-width:860px){
+    .page{width:100%;min-height:0;padding:16px 14px 46px;border-radius:10px}
+    .doc{font-size:13.5px;line-height:1.65}
+    .doc h1{font-size:21px;letter-spacing:.2em;margin:4px 0 14px}
+    .doc h3{font-size:14px}
+    .doc table.party{font-size:12px}
+    .doc table.party td{padding:5px 5px}
+    .doc-head img.l{height:24px}.doc-head img.r{height:16px}
+    .doc-foot{left:14px;right:14px;bottom:10px;font-size:10px}
+    .doc-foot span:nth-child(2){display:none}
+    .preview{overflow-x:visible}
+    .topbar .title{font-size:14px}
+  }
+  .msg{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;background:#fff}
+  .msg.rec{border:2px solid var(--ok);background:#f6fcf8}
+  .msg-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .msg-h b{font-size:13px;color:var(--navy);margin-right:auto}
+  .msg-h .tag{font-size:11px;font-weight:700;color:#fff;background:var(--ok);border-radius:999px;padding:2px 8px}
+  .msg textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.55;background:#fafbfd;resize:vertical;color:var(--ink)}
+  .btn.copy{padding:5px 12px;font-size:12.5px}
+  .btn.copy.done{background:var(--ok);border-color:var(--ok);color:#fff}
+  .stagebox{font-size:12.5px;padding:8px 10px;border-radius:8px;background:#eef3fc;color:#1d3c78;margin:10px 0}
+  @media print{ .page{zoom:1 !important} #home,#dash{display:none !important} }
+  /* v4: dashboard */
+  .dash-wrap{max-width:1180px;margin:0 auto;padding:18px 16px 60px}
+  .dcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .dcard h2{font-size:16px;color:var(--navy);margin:0 0 10px}
+  .dcard.connect{border:2px solid var(--accent);background:#f5f8fe}
+  .dcard.connect p{font-size:13px;line-height:1.7;margin:0 0 12px;color:var(--ink)}
+  .dsum{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .dsum div{flex:1 1 140px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  .dsum b{display:block;font-size:22px;color:var(--navy)}
+  .dsum span{font-size:12px;color:var(--muted)}
+  .dsum .hot{border:2px solid var(--ok)} .dsum .hot b{color:var(--ok)}
+  table.dt{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13px}
+  table.dt th{background:#f3f5f9;color:var(--muted);font-weight:600;text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);font-size:12px}
+  table.dt td{padding:10px;border-bottom:1px solid #eceff4;vertical-align:middle}
+  table.dt tr:last-child td{border-bottom:0}
+  table.dt td.act{text-align:right;white-space:nowrap}
+  table.dt td.act .btn{padding:6px 11px;font-size:12.5px;margin-left:4px}
+  .pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .pill.s0{background:#fff6dc;color:var(--warn)} .pill.s1{background:#eef3fc;color:#1d3c78}
+  .pill.s2{background:#e7f6ec;color:var(--ok)} .pill.s3{background:#eceff4;color:var(--muted)} .pill.bad{background:#fdecea;color:var(--danger)}
+  .todo{font-size:12.5px;color:var(--ink)} .todo small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+  .path{font-family:Consolas,monospace;font-size:12px;background:#f3f5f9;border:1px solid var(--line);border-radius:6px;padding:6px 8px;word-break:break-all;margin:6px 0 10px}
+  .dsec{font-size:13px;font-weight:700;color:var(--navy);margin:18px 0 8px}
+  @media (max-width:860px){ table.dt thead{display:none} table.dt tr{display:block;border-bottom:1px solid var(--line);padding:6px 0} table.dt td{display:block;border:0;padding:4px 12px} table.dt td.act{text-align:left} }
+</style>
+</head>
+<body>
+
+<section id="home" class="hidden">
+  <div class="home-card">
+    <img src="data:image/png;base64,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" alt="LeeKoos">
+    <h1>리쿠스 근로계약서</h1>
+    <p>받은 계약서 파일을 열어 확인·서명하거나,<br>담당자는 로그인해 업무 현황판을 엽니다.</p>
+    <button class="home-btn main" id="btnOpen" type="button"><b>계약서 파일 열기</b><span>대표 확인서명 · 입사자 서명</span></button>
+    <button class="home-btn" id="btnDash" type="button"><b>담당자 업무 현황판</b><span>경영지원 담당자 전용 · PC(Chrome/Edge) · 로그인 필요</span></button>
+    <input type="file" id="fileIn" class="hidden">
+    <div class="err" id="homeErr"></div>
+  </div>
+</section>
+
+<section id="login" class="hidden">
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <img src="data:image/png;base64,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" alt="LeeKoos">
+    <h1>근로계약서 관리자</h1>
+    <p>(주)리쿠스 경영지원</p>
+    <div class="field"><label for="uid">아이디</label><input id="uid" autocomplete="off" autocapitalize="off"></div>
+    <div class="field"><label for="upw">비밀번호</label><input id="upw" type="password" autocomplete="off"></div>
+    <button class="btn primary wide" type="submit">로그인</button>
+    <button class="btn wide back" type="button" id="loginBack" style="margin-top:8px">처음으로</button>
+    <div class="err" id="loginErr"></div>
+  </form>
+</section>
+
+<section id="dash" class="hidden">
+  <div class="topbar">
+    <img src="data:image/png;base64,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" alt="LeeKoos">
+    <span class="title">근로계약서 업무 현황판</span>
+    <span class="stage" id="dFolder">폴더 미연결</span>
+    <span id="dButtons">
+      <button class="btn go" id="dNew" type="button">+ 새 계약서 작성</button>
+      <button class="btn" id="dRefresh" type="button">새로고침</button>
+      <button class="btn" id="dSetBtn" type="button">설정</button>
+      <button class="btn back" id="dOut" type="button">로그아웃</button>
+    </span>
+  </div>
+  <div class="dash-wrap">
+    <div id="dConnect"></div>
+    <div id="dSettings" class="dcard hidden">
+      <h2>설정 (처음 한 번)</h2>
+      <div class="row2">
+        <div class="field"><label for="s_page">모바일 서명 페이지 주소 (GitHub Pages)</label><input id="s_page" inputmode="url" autocapitalize="off" placeholder="https://btypenine.github.io/leekoos-contract/"></div>
+        <div class="field"><label for="s_upload">NAS 파일 요청 링크 (→ 02_회수 폴더)</label><input id="s_upload" inputmode="url" autocapitalize="off" placeholder="https://xxxx.quickconnect.to/..."></div>
+      </div>
+      <div class="hint">대표·입사자가 휴대폰으로 여는 주소와 파일 회수 링크입니다. 이 PC에 기억되고, 새 계약서와 안내 문자에 자동으로 들어갑니다.</div>
+      <button class="btn primary" id="s_save" type="button" style="margin-top:10px">저장</button> <span id="s_msg" class="hint"></span>
+    </div>
+    <div id="dNotice"></div>
+    <div id="dList"></div>
+    <div id="dLog" class="hint" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<section id="app" class="hidden">
+  <div class="topbar">
+    <img src="data:image/png;base64,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" alt="LeeKoos">
+    <span class="title" id="topTitle">근로계약서</span>
+    <span class="stage" id="stageTag"></span>
+    <span id="topButtons"></span>
+  </div>
+  <div class="layout" id="layout">
+    <aside class="side" id="side"></aside>
+    <main class="preview" id="preview"></main>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+  var LOGO_L = "data:image/png;base64,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", LOGO_R = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXAAAABGCAMAAAGVlA+fAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAKFUExURaWlpZubm4uLi4ODg3d3d29vb2djY1tXVwAAAF9fT0dDQyYmIyspKSooKD88OjIvLQ8PDwcHBxsbGwoKCqWnp5+goJ6fn52enpucnJmampiZmZeXl5WWlpOUlJKTk5GSkpCQkI+Pj46OjoyMjIqLi4mKiomJiYiIiIeHh4SEhIKCgoGAgIB/f35+fn19fXt7e3p6enh4eHd2dnV0dHNycnJxcXBvb25tbW1ra2xqampoaGlnZ2dlZWZkZGVjY2RiYmJgYGFfX19dXV1bWltZWFlWVk1LSktJSElGRkI/PzYzMjUzMjEvLi8qKhsZGBcWFRMTEhEREA8ODg0LCwMDAxAQDpGRkaChoVVUUk9NTEtJSUM/Pz06OTo4Nzg2NRoZGKenp6Kjo01HR1JPTkxLSjw7OkA9PB0cHAwKCgUFBa+vr6SlpU9PR1VSUk9KSkdEQ0RBQDw7OSMhISAfHywpKQYFBaapqaWmplpYWFhUVElHRyUjIxcXF6anp1dTU1dUVDc3My0rK6eoqFxaWionJyEfH62vr6mqql5cXB4dHbu7u6CiopaWlpCRkYOCgn58fHJwcG5ra2toaERCQTUzM1ZSUmRkZGhlZV1bWWNhYUNBPyYjI21tbW9sbE9NTU5LSnBwcH18fH9/f399fXl5eVxbWsXFxcLCw8DBwb/AwL6/v7y9vbu8vLq7u7m6ure4uLW2trS1tbKzs7Cxsa6vr62urqytrausrMTFxdTU1MfIyMrMzNPT08nJysvLzM3OztfX2ZSUlGNgYJqbm6Gjo729vdfZ2c3Pz72/v9ra29nZ2tfX2NbW19TU1dDR0dzc3d7e3+Lj49/g4Le7u9/h4eTk5AAAADkXTW0AAADXdFJOU/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AxEYZ1QAAAAlwSFlzAAAsSgAALEoBd3p0TQAAESpJREFUaEPtW01LJMsSddHguHjORmYhuJlNw/0N9RdGaGbnc6UL4SIIDa5r0YLQi7EFcSUyq+f8Bnk0j17M5oLNIFO/551zIjIrq/rbcuyBe09pdWZWVVbUqcjIyMisjWIlbBSXu0C73QKyosiL/Ky4KYrOu4Ib8S5BvfZRkef8vcBZPN2uiJgQplWMcJMCt+gWnamnP/b7/ctLCmVlNbgcwJTa/TGKbDMvzs7wFBXUT7cbtLXHc0OoCiZqL3ZwBf5wkyLLbr0wIJ4+Hg+fhkpd6o83aCmfn5ZCTdZ+iP8aHyU2yMienu86I4OksOiKcrvIWTHUa6e0B8V20e3o9Ppt6qdDEXoZ7nBY3HQm3xJP/4a31H++3N3Z3fPCClwMYrJ2PEWB5yg2szzPl3xNIJEc4slPmU1QP10X8C1d8S31Zr2m8X/HT8NHpvp6S7yLqQJl2i5fE1vHbhvktwXqF1+BvQTq/jZP7nbRZPTcKMHOnt2I8/QkJkWvAK+AzdEUE/c46ejdsXI7YS4WVA46WX1PzRc3OORDFHjbVvmCWyyqnK+3KO4CR7rJNpo8nqGjp5gHr3w4fHyUMZA9kEWQKiwFZ7gCHVggeXKL9hX3tImEmbmzbWVmYUHl9hhKoglwL22CWhtRusVM1CuHnTH0ocGOS2hyeAg3bMXAjI+Q5wdnaHE3N9TXFBOS//g5Bp7GT0/M2ZvQAbsF7sHW4M9hQJtAg2bz8YKABbQQQZylVLuCDTXQvaSBXnsL7eHoqWkedp1P6tNcvaOGKDcT6B1N8XAD1H91daU3lg30xvjCTo/4tO/xBPuoX/WxclZrsIqmYBEtbJ7F/Zl07ga2vlOcW81J5bOxqPKMpiUvDvAIoAfqsG+G3ipfcIsFlbcGXyU8uQc9tPC4QexImlVONeOOhh0PIGV7/8nML9CwctmtVni7apHbIB/y024tVbmaCqwWNrX3lQyXqUYNOmKVo7k/4AbPofZXrXwmvLG7vRqA/jzbIjnH7Cpp1+dhUeX+G4xisLhSn+KwbkxqaFR53eWrYyEteAFKWeVGD7WTOSnPHCyonLDOYtcqb7dofKT/0P7VKh8PY2fx4EXyevgM3EczjncbYH3FIfuK+Z0FOwr4vE+s3ouKvirfSW4BVDqi/Owe9atxVVCnxTsiQJX3Y0dklVM3P0o3lROy29ARTfZEH4I9V2cRcKW9Xh9w3bqWh5dtjkZwUu1S1mcpdJ9BaFgF7L0VxdYEJEUROkB4fhVYRwThJX17t72XPoDLDd1z39Tgt8uPXNkJc2C8ze4H8QkWBMHLfAUsXhF6nbuXlHxHxAsud0DoV4nrwSAIXvS2JHnOgdMRU9vwXfhrKglfkv6qSWq/IVcDJVkFuGSJ5jkb8ISwh8r4rsAD6ICpDsQH8Z3P6rLsdrY3pOnV0Uhw711zvoI83yzy42Mrt7ZEzxE/3RNKjh4R+99G8Fbrq+s8f1x1pDzYU/WZ+0TPV+wXn38TweFzEEqy1cZmK8WhDbY8uL/4l9hHs3VxIfcrCU6fJQKNNfgXhth00Vj9AuLqCwbZAh7gzlJ4iC3TnvzA8sXN2baPm6D4+/sQ/3N4AIIPsRz8gorgGCX2bXjSh1sk4fv9P11uN/YGv+D14FIthp8PVFSFHSYkf3h8kPTEMx/h+dlk33Hp/fTXg4u1EH460UjH8Qx7bexk7JFnd2taz7EaCrzT6vXQbM1eUu+J7e3tw0UO5lw0Ehz646kE7ZaFBoiBN9wIE98A8T31EjRj3B3TCpx9wXhPUBqe6kOsjkaC088xwLv2Igj+MQqeqk6w9uhue9qvU/AIDPk8RcWPCpSQb0hMZkPMF5zeOf+H3+VFA98eH0tXvQRI95QmBTyJh6jFeCd0x5Dnx3wBGjZso+He3LyfHDtUsYDxHz/o+wPfIboGAZTeD6LLotWXzbfhBrGTNFkGbYLVEfm2n8DtreTOz/LTexmdaeOSKl5HVercNOrMl8MG3+wH6qWAkYQjeuDXGEVkNgDazLLRCF6g4SiYMw4KLyxJDzy6IWmfEVIqc6iA8PxK2AhWweTmoM9xpYGxgWL74A2did8ujtzYnXCaBfARhDkiuoGKo+AqCtABwvOrAKoShm0OaaWLrr2Lrr1EH/ntqJRKSCeVKrqMddnQJ8ijche8zFfA4hUBwdGLfIA1i+LvVUadEl9Ca+Apyf12sQeR4JLcWxQcQHe+dQ/CfmO2ChavBmucFBpSu+ht2oFE/CvI7WNOaYvNVBA2coPc95yuY1LzO+a64qfz+dwFfl3BP/OaJlYlu1VDJfF5fs8SJ96D/XC8w5BtvuAvQSNzaGojjamM1TzO0j2B+FB3F9n2UfCGz9Bc8DyV3iYn2ffh5+aCvGO4g/1UwZtI3lxwox0+k0sPgHgO1Ix3GyZH3n8LwSW06wv2kDsKTpUpbQznM5KeSVir4JxTaHFapCjQMbmVoeAHDGydebd0AZXpnsjOJNOk6xVcUDLLbrOeC+7Ue1M1KyM7UwYnfgPBsyA43AFxXxT0UfGT5woompW5+cQU4yoqaip3Q8GNcqVGgzspO+Ej47PgzLBjCvrOXrXzGc7MqwluoYkE6lCJJIwr99ovIFpfvoSRwV12F+YSRrbIILRVgH6YpSg6fZnPidh8iOXgFwAJ448PDw+PYWjASEoUHd6AzcYR7Skj+4ZwqZaAXwCkgovyEMviugePAxHywpx7P//14FItAb8ASAS3lRoT6hJ0BkMyYq2C+/lE2jil5Y8l7dCYKHYAxffTXw8u1mL4+UQq+MrQhFc6FJaRoYW07tSM5FY2omFXl3TETlUjJjczL0YTwaXwlFuuOwooeBBeFkajvRENvHwZ9Uyc+pPszSRvKrgnE0BoT8FCRtNuOD6OEXO6kJ56ERoK7qkUGDN5qqDKeNLAuJsn6RD4CPtFaCL49HaKIaqn1K960gAfMgpeTrS8CM0ELyOGJUzdhQnBN7M8BDeC7/tSNFIV2kcPJ3kRgJbqKQjuoRk2Uj7CZvTD2FCbyN1IcAsPfGCflET4k6dgcCBYGXFPI0PAlyHsrJehkeABegBPF3DDPMV22orz6SwYtAYm+a0v9nw5XkXwSjtNGHfzXgIq8ybxcYaXGR//Dlh0vP8NLoEfTbGk4CB+muDqlDSt9e9DdqkAvV8/Oh1zBafQCu1/D5Fx+WF+NAHdSE/S1nhqquBVM2OgvpvgBJdgAIpCzsZ8VZHggGh30acwDrGfS8ETE0NfwJPCDMFtFRBwn/gDCzyC+YL/sNVIBs6mSHg/aGuT5LU/X6ZrcuMzQG0sBClHDHmaGDtSQcaOKcJlX9CtLmicP0vRn/A/lOh+DIK75M/lREpVcCq8xVCD4KU/kIBBd7eQ+akLvsjIb3BQ9iGZk3C0dz9yeuKju37ox/lHqwwLxzdeQlMW8EosBm3Y5OwFd5ubW6N8s2b6TqdIJr1+X9NrjKsxOrV0zSWvZQMmSj3WXYcfTeAHfjU2ig/s+T6UY2GSzfcLuuVrh3GCOP/jD7FOylPaGfHHdi0450KOLr6X5VthEsORH+Vl6EK4gU7LEHrewICAQqbAOwU0AlNKC17gqJZZbhr8hAR+4FfDFu9dknBoek3RyTi3hHQAvBvpRnyA5oh8gq7C+2g00nr3BGqEHuQSpPI0gpWxBfug2AspEhPidy69YCWOSpFlAM/PhZ/6i0FbaIxzJ+uSqDpBxjkbxC2FTMzVNN652gCsU+Wd8nKaLkCMJ3YG+h7hReAb3T42z3W6+9D2JOwYYUWGtMTSS7EN+Nm/Ft75gHJj3EgH5fw+LGJPjLMDlLonAOvkHE5ryroMDOnm7o6j5dqwM3bwngPfMjE1wmXWo42Brp+caCYPOO+cK84enyMgzVv6NyKct1nQ2/8y5Bh4lmvPST4nSbWWO5TSwiTfSV1cdC+igaGuqzs9P3937o8ilE+2KuFvhHURDpeKvamlpe1MU89jZzqp7xc3XV+f0T3Zx5/sSwfKXrKacmzpfwg3wMzchrgQnJk81yekkXquTaRdV1I4TL0YKburu2m7kssRPqv8TbA2wj22Yqk8fNpSEg7PMT8+SAkH/bAxlgHz3U9dTeDRune4KU378g/hU/H1q7wYpCLzAHU932JCK/msUJCBCTadug5YBoyfBH2nstd8R8skmFX+Jlgf4YyZY0tVnYVUd/AsTU/5ln0HLHPImIstQhKihZniO1omwazyN8EaCS/gsQ8GWYuaXoZYwHhPKwN7sU813DNcce+Em7YnBsdcdn44wv7Uyt6571jH35dwYtBq3VWmh6TvtyQ9KQSk8sFnFOFpl8qVPPBiSHo32HaZl2RxiWOtfK+VcGOcuPYCQoQLFQV3I+Nfcx1T2WvTL5rn5Zrt+LkFRkrwHeXEnAPOtMPPeWusl/A4OvUCIbvD6JSTLJ539EbqUC2DxFl+Gqd3DRaLKftSgJa9Iy9GtMPInFv40I+/PaYRPnzsDxns5jKbsOrj+RJ/2PHLdPxUPiDbvdxhQMBjAvpxKPqlmIBXXcdV60uNbgKWvfxKNILfgESll7p7usQ2zExCdwAoB+kn2Don5142Ab2HV4ZXnWKqhnOJCih/eMC/ffcgPPuKFZFvnCdrhjwW44yn67YYx/eaf2M4R68KrzrFVMKffGUQFwaB9ETRjXRjXRqvrYJKCCzCa/6N4Ry9JrzmCmbYcJsFFLiAT7tS14110m58Q89T1o1v7mRq/raEe8VVzO40+yLdWQfjXAlX1XWCjHMHzv8sP60lQLn2tnmlFSjWju1jDLUryG4Hyw93BI/3YrtOXRrOhmb5JifxUtjBI/MdBXanmuLlPF7wYirwGaXXgtc6gdmE/2LY1IYzvlvObgTC2y2f3SgRSLcTSgdy1Mt6OcZK5Uy0Hdc8XjKzoXCvL2jwqOPbY12Ey87YzLg455y1w8/gfNIVPzbyNTkBcVQKT8amlEi4xqcgPd8aRe8FzB/DYc8VdnRI08H64RRn5k2wLsK9P/XcXEDNOaPkuQjT9oniBKbtk84jgwLJzMbbYm0arh7VM/MBwsm55yJkYipj1DpmEy5d99wbY20arsGSZ+ajamkizMDM0/Asv0WPylhvFTLsR9W4wJthfYS7D+P5OZhBuFt2z02DJjZqITCCy6Rg1z33xlgX4c64eY/mOWqb8gLYp04jHA6M/QlansFob+nGqEfVuhgCxmUrrEvzD8DWgbURDhjjAL9G12fd3PxgCXNjJginXff+tPQdbVWMnzGYXATGVWDGup/z5lgn4XW4snsuwmJge56LkJ0JXvtUuB/jhCvGThsDn91PWAcaEG6LU8dP46Ftw6e4Af9J/vr9aauzJ0FFn1RxcyAn3oMIn1T8BJzcyOybo2VQHycd2mYDJc5raB5vH1snLhJYHS8nHFx/F+PD8fivv4YkXmw74RHfhv3ht+UJTxcNG2YQ7qNTz00DTMygNVj2IwAuE2B3ypm8ZL26iHfWu1oZo1ivX7Q6mmv4+Pv/RDr/jHZfRx7wyMCjXzMXCoRNEs4x0pTe1Ez7vLGTmfV5fkwKWXbDAZfYV7SdUQGn/b2Y94tWRwPCf/744ZQDzngwMCK9ZP0xLoYPSGOPDsbBGHb0MyLmdKb251sAxkl2AvvTL61pK+mnId8qYzHEGYjnNF6i6wwMGOt+zQvQqNME5T9+Jqw73fbzVH4zAfgVEUPG2ZPJDcDmNfx4AptP2vFcAmh+e5erTMm3YjEhBGbHr/ht1NWyhPNrNY6TgusIHNBdr+s6WPcrXoRGhBPj8Y8xeMde4JdMIFy78fAvEM7/8nOPAJh1xtkfnxPS/dAELnd2dmZbDhn4oOVm2P1IQW1f1qLAbVcErJfdgvQq8SnpfvILURT/B/QOpt+PPNn+AAAAAElFTkSuQmCC";
+  var CRED = {"salt": "57f0c2dfad1ccc9e8b32bbee67c51507", "iter": 310000, "hash": "abba68e820063ce3b60ba0b9d851bffa67e37b43a19e2c73242e16007acee13a"};
+  var COMPANY = { name:"㈜리쿠스", biz:"881-86-00330", addr:"경기도 안산시 단원구 산단로 325, 스마트스퀘어 344호", web:"www.leekoos.com", tel:"Tel. 1666-4514" };
+  var DEFAULTS = { name:"", birth:"", addr:"", dept:"연구소 / 하드웨어 개발", date:"", salary:"",
+    type:"probation", months:"3", payday:"10", lunch:"13:00~14:00",
+    duties:"연구소 하드웨어 개발(전자회로 설계, PCB 아트웍, 펌웨어 개발, 제품 시스템 설계, 전자파·안전·무선 등 각종 제품 인증 대응 및 관련 부수 업무)", ceo:"구성민" };
+  var KEYS = ["name","birth","addr","dept","date","salary","type","months","payday","lunch","duties","ceo"];
+  /* ---------------- sha256 ---------------- */
+  function sha256(ascii){
+    function rr(v,a){return (v>>>a)|(v<<(32-a));}
+    var mp=Math.pow,maxWord=mp(2,32),result="",words=[],bitLen,i,j;
+    var bytes=unescape(encodeURIComponent(ascii)); bitLen=bytes.length*8;
+    var hash=[],k=[],pc=0,isC={};
+    for(var cand=2;pc<64;cand++){ if(!isC[cand]){ for(i=0;i<313;i+=cand){isC[i]=cand;} hash[pc]=(mp(cand,.5)*maxWord)|0; k[pc++]=(mp(cand,1/3)*maxWord)|0; } }
+    hash=hash.slice(0,8);
+    bytes+="\x80"; while(bytes.length%64-56) bytes+="\x00";
+    for(i=0;i<bytes.length;i++){ j=bytes.charCodeAt(i); words[i>>2]|=j<<((3-i)%4)*8; }
+    words[words.length]=((bitLen/maxWord)|0); words[words.length]=(bitLen);
+    for(j=0;j<words.length;){
+      var w=words.slice(j,j+=16),old=hash; hash=hash.slice(0,8);
+      for(i=0;i<64;i++){
+        var w15=w[i-15],w2=w[i-2],a=hash[0],e=hash[4];
+        var t1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]
+          +(w[i]=(i<16)?w[i]:(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+        var t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+        hash=[(t1+t2)|0].concat(hash); hash[4]=(hash[4]+t1)|0;
+      }
+      for(i=0;i<8;i++) hash[i]=(hash[i]+old[i])|0;
+    }
+    for(i=0;i<8;i++) for(j=3;j+1;j--){ var b=(hash[i]>>(j*8))&255; result+=((b<16)?0:"")+b.toString(16); }
+    return result;
+  }
+  function macOf(key, data, companySig){ return sha256("LK|"+key+"|"+JSON.stringify(KEYS.map(function(k){return data[k]||"";}))+"|"+companySig); }
+
+  /* ---------------- helpers ---------------- */
+  function $(id){return document.getElementById(id);}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function fmtDate(v){ if(!v) return ""; var p=v.split("-"); return p[0]+"년 "+(+p[1])+"월 "+(+p[2])+"일"; }
+  function fmtStamp(iso){ var d=new Date(iso); function z(n){return (n<10?"0":"")+n;} return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+" "+z(d.getHours())+":"+z(d.getMinutes()); }
+  function digits(v){ return String(v||"").replace(/[^0-9]/g,""); }
+  function comma(n){ return n? Number(n).toLocaleString("ko-KR") : ""; }
+  function hangulAmount(n){
+    n=Number(n); if(!n) return "";
+    var nums=["","일","이","삼","사","오","육","칠","팔","구"],small=["","십","백","천"],big=["","만","억","조"],out="",unit=0;
+    while(n>0){ var chunk=n%10000,s=""; for(var i=0;i<4;i++){ var d=Math.floor(chunk/Math.pow(10,i))%10; if(d) s=nums[d]+small[i]+s; } if(s) out=s+big[unit]+out; n=Math.floor(n/10000); unit++; }
+    return out;
+  }
+  function lsGet(k){ try{ return localStorage.getItem(k);}catch(e){ return null; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,v); return true;}catch(e){ return false; } }
+  function lsDel(k){ try{ localStorage.removeItem(k);}catch(e){} }
+  function download(filename, text){
+    var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type:"application/octet-stream"})); a.download=filename;
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  }
+  function safeName(s){ return String(s||"이름미입력").replace(/[\\\/:*?"<>|\s]+/g,"_"); }
+
+  /* ---------------- signature pad ---------------- */
+  function makePad(canvas, onChange){
+    var ctx=canvas.getContext("2d"), drawing=false, empty=true, last=null;
+    function fit(){
+      var r=canvas.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+      canvas.width=Math.max(1,Math.round(r.width*dpr)); canvas.height=Math.max(1,Math.round(r.height*dpr));
+      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.lineWidth=2.4; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle="#111";
+      empty=true; onChange&&onChange(empty);
+    }
+    function pos(e){ var r=canvas.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
+    canvas.addEventListener("pointerdown",function(e){ drawing=true; last=pos(e); canvas.setPointerCapture(e.pointerId); ctx.beginPath(); ctx.arc(last.x,last.y,1.1,0,Math.PI*2); ctx.fillStyle="#111"; ctx.fill(); if(empty){empty=false; onChange&&onChange(empty);} });
+    canvas.addEventListener("pointermove",function(e){ if(!drawing) return; var p=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; });
+    ["pointerup","pointercancel","pointerleave"].forEach(function(t){ canvas.addEventListener(t,function(){ drawing=false; }); });
+    setTimeout(fit,0);
+    return {
+      clear:function(){ fit(); },
+      isEmpty:function(){ return empty; },
+      toDataURL:function(){
+        var w=canvas.width,h=canvas.height,img=ctx.getImageData(0,0,w,h).data,x0=w,y0=h,x1=0,y1=0;
+        for(var y=0;y<h;y++) for(var x=0;x<w;x++){ if(img[(y*w+x)*4+3]>0){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
+        if(x1<x0) return "";
+        var pad=6; x0=Math.max(0,x0-pad); y0=Math.max(0,y0-pad); x1=Math.min(w-1,x1+pad); y1=Math.min(h-1,y1+pad);
+        var tw=x1-x0+1, th=y1-y0+1, scale=Math.min(1, 360/tw), c=document.createElement("canvas");
+        c.width=Math.round(tw*scale); c.height=Math.round(th*scale);
+        c.getContext("2d").drawImage(canvas,x0,y0,tw,th,0,0,c.width,c.height);
+        return c.toDataURL("image/png");
+      }
+    };
+  }
+  function padHTML(id, placeholder){
+    return '<div class="padwrap"><canvas id="'+id+'"></canvas><div class="ph" id="'+id+'_ph">'+placeholder+'</div></div>'+
+           '<div class="padbar"><span class="hint">마우스나 손가락으로 서명</span><button class="btn" type="button" id="'+id+'_clear">지우기</button></div>';
+  }
+  function bindPad(id, onChange){
+    var pad=makePad($(id), function(empty){ $(id+"_ph").style.display=empty?"flex":"none"; onChange&&onChange(empty); });
+    $(id+"_clear").addEventListener("click", function(){ pad.clear(); });
+    return pad;
+  }
+
+  /* ---------------- document rendering ---------------- */
+  function filled(v, ph, strict){ return v? esc(v) : (strict? "" : '<span class="missing">'+(ph||"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")+'</span>'); }
+  function sigImg(src, cls){ return src? '<img class="'+(cls||"")+'" src="'+src+'" alt="서명">' : ''; }
+  function head(){ return '<div class="doc-head"><img class="l" src="'+LOGO_L+'" alt="LeeKoos"><img class="r" src="'+LOGO_R+'" alt="WINGSTEP"></div>'; }
+  function foot(n){ return '<div class="doc-foot"><span>'+COMPANY.web+'</span><span>경기도 안산시 단원구 산단로 325, 스마트스퀘어 344호 · '+n+'</span><span>'+COMPANY.tel+'</span></div>'; }
+  function C(t,b){ return '<div class="clause"><h3>'+t+'</h3>'+b+'</div>'; }
+  function P(t){ return '<p class="pre">'+t+'</p>'; }
+
+  function clause2(d,f){
+    var date=f(fmtDate(d.date),"(계약일)"), m=esc(d.months||"3");
+    if(d.type==="renew") return '<p>"을"은 '+date+'로부터 본 근로계약 사항이 적용 된다.</p>';
+    var evalItems='   &lt;평가 항목 및 배점&gt;\n   - 업무 수행 능력 및 적극성 (40점)\n   - 출결 상황 (결근 1회당 5점 감점, 지각 3회당 5점 감점) (20점)\n   - 조직 적응도 및 협업 능력 (20점)\n   - 직무 전문성 및 발전 가능성 (20점)\n';
+    var excl='   - 무단결근 2회 이상 또는 월 누적 결근 5일 이상\n   - 중대한 업무상 과실 또는 고의적 업무 방해 행위\n   - 회사 규정 위반으로 징계 처분을 받은 경우';
+    if(d.type==="intern") return P('"을"은 '+date+'로부터 초기 '+m+'개월은 인턴(계약직) 조건으로 계약되며,\n\n1. 이후 평가를 통해 정규직 전환 여부를 결정한다.\n2. "갑"은 인턴 기간 종료 1주일 전까지 다음의 객관적 평가를 실시한다:\n'+evalItems+'   평가 결과 70점 이상 득점 시 정규직 전환 대상이 되며,\n   최종 전환 여부는 회사의 경영 상황, 인력 수급 계획 등을 고려하여 결정한다.\n3. "갑"은 평가 결과를 "을"에게 서면으로 통지하며, 전환이 불가능한 경우\n   그 사유를 구체적으로 명시한다.\n4. 인턴 기간 중 다음의 사유가 발생한 경우 정규직 전환 대상에서 제외된다:\n'+excl);
+    return P('"을"은 '+date+'로부터 기간의 정함이 없는 근로계약(정규직)으로 계약하며, 최초 '+m+'개월은 수습기간으로 한다.\n\n1. 수습기간 중 임금 및 근로조건은 본 계약과 동일하게 적용하며, 수습기간은 근속기간에 포함한다.\n2. "갑"은 수습기간 종료 1주일 전까지 다음의 객관적 평가를 실시한다:\n'+evalItems+'   평가 결과 70점 이상 득점 시 본채용으로 확정한다.\n3. 평가 결과 70점 미만이거나 아래 사유가 있는 경우 "갑"은 합리적 사유를 들어 본채용을 거부할 수 있으며,\n   그 사유를 "을"에게 서면으로 통지한다.\n'+excl);
+  }
+
+  function renderDoc(d, sig, opt){
+    opt=opt||{}; var strict=!!opt.strict;
+    var f=function(v,ph){ return filled(v,ph,strict); };
+    var cs=sig.company||"", csClass=sig.companyKind==="seal"?"seal":"", es=sig.employee||"";
+    var dutiesSentence=d.duties? ' “을”의 담당업무는 '+esc(d.duties)+'로 한다.' : '';
+    var docno=opt.docNo? '<div class="docno">문서번호 '+esc(opt.docNo)+'</div>' : '';
+    var p1=head()+docno+'<div class="doc">'+
+      '<h1>근로계약서</h1><div class="label">◆ 계약당사자</div>'+
+      '<table class="party">'+
+        '<tr><td class="h" rowspan="2">사 용 자 (갑)</td><td class="h">상호</td><td>'+COMPANY.name+'</td><td class="h">사업자번호</td><td>'+COMPANY.biz+'</td></tr>'+
+        '<tr><td class="h">주 소</td><td colspan="3">'+COMPANY.addr+'</td></tr>'+
+        '<tr><td class="h" rowspan="2">근 로 자 (을)</td><td class="h">성 명</td><td>'+f(d.name)+'</td><td class="h">생년월일</td><td>'+f(fmtDate(d.birth))+'</td></tr>'+
+        '<tr><td class="h">주 소</td><td colspan="3">'+f(d.addr)+'</td></tr>'+
+      '</table>'+
+      '<div class="lead">“사용자”와 “근로자”는 다음과 같이 근로 및 연봉계약을 체결하고 성실히 이행할 것을 약정한다.</div>'+
+      C('제1조【계약의 목적】','<p>“사용자”는 사업을 영위하기 위해 “근로자”를 고용하고 보수를 지급하며, “근로자”는 이에 대해 성실히 근무하는 것을 목적으로 한다. 이 계약서에 명시된 보수와 조건을 기반으로 업무를 수행하며, 사용자로 명시된 자는 실질적인 결제권자를 포함한다.'+dutiesSentence+'</p>')+
+      C('제2조【근로계약기간】',clause2(d,f))+
+      C('제3조【근로자의 의무】',P('1. “을”은 “갑”의 피고용인으로서 품위를 지키며 “갑”의 제반규칙을 준수하여야 한다.\n2. “을”은 최선을 다하여 “갑”의 업무지시에 응하며 본 계약 때문에 부과된 업무를 성실히 수행하여야 한다.\n3. “을”은 계약 기간 동안 “갑”의 사전 동의가 없는 한 여타 다른 업무에 직접 또는 간접으로 종사하지 못하며, 어떠한 영업행위나 거래도 할 수 없다.'))+
+      C('제4조【보안 준수】','<p>근로자는 재직 중 및 퇴사 후에도 회사의 기술, 노하우, 고객정보 등 영업상 정보를 외부에 누설하거나 유사한 사업에 활용해서는 아니 되며, 이로 인한 손해 발생 시 민·형사상 책임 및 손해배상 책임을 진다.</p>')+
+      C('제5조【근로시간】',P('근무시간: 주 5일(월~금), 1일 8시간, 주 40시간 (법정 근로시간 기준)\n점심시간: '+f(d.lunch)+' (1시간 휴게)\n업무 특성상 연장, 야간, 휴일근무가 발생할 수 있으며, 주 52시간 이내를 원칙으로 한다.\n[1일 6시간(주30시간)단축 근무 조건 근무자는 별도 사항 적용]'))+
+      C('제6조의1【휴일․휴가】',P('“갑”의 제규정(리쿠스 사내 규정)에 따른다.\n1. "을"은 연차유급휴가를 사용하고자 할 때 사전에 "갑"에게 통보하여야 한다.\n   원활한 업무 운영을 위해 가능한 7일 전까지 신청할 것을 권장한다.\n2. "갑"은 "을"이 청구한 시기에 휴가를 주어야 한다. 다만, 다음의 경우\n   "갑"은 시기변경권을 행사할 수 있다:\n   - 해당 시기에 휴가를 주는 것이 사업 운영에 막대한 지장이 있는 경우\n   - 중요 프로젝트 마감일 또는 필수 업무 수행 기간\n   - 동일 부서 다수 인원이 동시 휴가로 업무 공백이 우려되는 경우\n3. "갑"이 시기변경권을 행사하는 경우 그 사유를 "을"에게 구체적으로\n   통지하고, 대체 사용 시기를 협의하여야 한다.\n4. "을"이 연속 3일 이상의 휴가를 사용하려는 경우, 업무 인수인계 계획을\n   함께 제출하여야 한다.'))+
+      C('제6조의2【지각․조퇴․외출 처리】',P('1. "을"이 지각, 조퇴, 외출 등으로 소정근로시간을 채우지 못한 경우,\n   해당 시간은 무급으로 처리하며 해당 월 급여에서 시간당 통상임금을\n   기준으로 차감한다.\n2. "을"은 제1항의 무급 처리를 원하지 않을 경우, 본인의 의사로\n   연차유급휴가(시간 단위 또는 반일 단위)를 사용할 수 있다.\n   이 경우 "을"은 사전 또는 사후에 휴가 사용 신청서를 제출하여야 한다.\n3. 무단 지각, 조퇴, 외출이 월 3회 이상 반복되는 경우 징계 사유가 될 수 있다.'))+
+      C('제6조의3【연차휴가 선사용 및 정산】',P('1. "을"은 "갑"의 승인을 받아 아직 발생하지 않은 연차휴가를\n   미리 사용할 수 있다.\n2. "을"이 연차휴가를 선사용한 후 중도 퇴사하여 실제 발생 연차가\n   사용 연차보다 적은 경우, "을"은 초과 사용분에 대한 수당을\n   "갑"에게 반환하여야 한다.\n3. "을"은 제2항의 경우 최종 급여 또는 퇴직금에서 초과 사용분을\n   공제하는 것에 동의한다.\n4. 입사일 기준으로 재계산한 발생 연차와 회계연도 기준 부여 연차가\n   다른 경우, 입사일 기준으로 재계산하여 정산한다.'))+
+      C('제7조【보 수】','<p>사업자가 지급하는 보수는 다음과 같다.</p><div class="salary">연봉 : 금 '+f(hangulAmount(d.salary),"(연봉)")+' 원 ( ₩ '+f(comma(d.salary))+' 원 )</div>'+
+        P('1. (식대, 차량유지비, 직무수당, 근무수당) 포함.\n2. 지급일 : 매월 ['+f(d.payday,"  ")+'일] (휴일일 경우에는 전일 지급)\n3. 지급방법 : “을”의 은행계좌에 송금\n4. 연/월차 사용이 아닌 결근 시 주휴수당은 지급되지 않는다.\n5. 연봉에는 다음 항목이 포함된다:\n   - 기본급\n   - 연장근로수당 (월 20시간 기준)\n   - 야간근로수당 (월 10시간 기준)\n   - 휴일근로수당 (월 8시간 기준)\n   - 직무수당, 식대 등 고정수당'))+
+      C('제8조【근태사항】',P('다음 각 호의 사유가 있는 경우에는 취업규칙상 관련 규정을 적용하여 연봉을 지급한다.\n- 휴직, 결근, 감급, 정직'))+
+      C('제9조【퇴직절차】',P('1. "을"은 퇴직하고자 할 경우 사직희망일 30일 전에 사직원을 제출하여야 하며,\n   업무인수인계 및 회사 자산 반납을 완료하여야 한다.\n2. "을"이 제1항의 통보 기간을 준수하지 않아 "갑"에게 실제 손해가 발생한 경우,\n   "을"은 그 손해에 대해 배상할 책임이 있다. 단, 손해액은 "갑"이 구체적으로\n   입증하여야 한다.\n3. "을"이 긴급한 개인 사정으로 즉시 퇴사하는 경우 근로일 기준 일할 계산된\n   금액을 지급하되, 미완료 인수인계 업무로 인한 회사의 손해는 별도 협의한다.'))+
+      C('제10조【비밀준수 의무】',P('1. “을”은 계약기간 동안 본인이 직접 또는 간접적으로 관련되어 취득한 회사의 영업비밀 보호를 위하여 신의성실의 원칙에 입각하여 최선을 다하여야 하며, 재직 중 또는 퇴직 후에 라도 “을”이 날인하여 “갑”에게 제출한 “비밀유지서약서”의 비밀유지의무 사항을 회사의 사전 허가 없이 사용, 복제, 누설해서는 아니된다.\n2. 전항을 위반하여 “을”의 고의 또는 과실로 “갑”에게 손실을 입힌 경우, 부정경쟁방지 및 영업 비밀보호에 관한 법률 등 관련 조항 또는 회사 내규에 의해 그 손실액을 배상하여야 한다. 핵심 내용에 대한 유출의 경우 해당 사업내용 전체에 대한 제반 비용을 청구 할 수 있다.'))+
+      C('제11조【계약해지 사유】',P('1. 계속하여 2일 이상 또는 월간 3일 이상 결근한경우\n2. 취업규칙 또는 “갑”의 정당한 업무명령을 위반 또는 사내 업무환경 훼손등의 사유로 해고 결정이 있는 경우\n3. 이력, 경력을 위조하여 허위로 입사하였을 경우\n4. “을”의 일신상의 사유로 계속적 근로가 불가능한 경우\n5. 기타 사회상규를 위반하여 계속적으로 근로계약을 유지할 수 없다고 판단된 경우\n6. 최근 6개월중 3회 이상 당일 통보 결근이 반복되는 경우 경영지원부의 검토후 계약 해지\n7. 반복적 근무 태만 및 태도 불성실의 경우 2회 경고후 3회 발생시 계약 해지\n8. 계약 위반, 무단결근, 내부 질서 위반, 이력 위조 등은 계약 해지 사유가 된다.'))+
+      C('제12조【손해배상】','<p>“을”의 귀책사유로 인해 계약기간 중 또는 계약해지 후 “갑”에게 중대한 손해를 입힐 경우 "갑"은 "을"에게 회사의 손해에 대하여 배상을 청구 할 수 있으며, 규격화된 손해의 경우 일단 배상하고 "을"의 이의제기시 법적절차를 통해 확실하게 하도록 한다. 이때 손해는 잠정적인 손해를 모두 포함하며, 매출에 영향을 미치는 경우 해당 금액 만큼에 대한 책임 여지에 따라 배상을 청구 할 수 있다.</p>')+
+      C('제13조【정보보호 및 사내 장비,기구 사용】','<p>사내 전산 장비 및 일반 기구물 기타 장비, 시스템은 업무 목적에 한해 사용 가능하며, 외부 반출 시 회사의 승인을 받아야 한다. 개인정보는 외부 유출하거나 무단 저장할 수 없다.</p>')+
+      C('제14조【업무성과물 및 지식재산권 귀속】','<p>근로자가 재직 중 창출한 문서, 디자인, 기획물, 시스템, 기술자료 등 모든 성과물의 소유권은 회사에 귀속된다. 특히 회로도, PCB 아트웍, 펌웨어 소스코드, 설계도면 등은 편집 가능한 원본 파일로 회사가 지정한 저장소(NAS 등)에 수시로 보관하여야 하며, 퇴직 시 원본 일체를 인계하여야 한다.</p>')+
+      C('제15조【기타사항】',P('1. 기타 본 계약서에 명시되지 않은 사항은 “갑”의 취업규칙 등 제 규정과 기타 노동관계법령이 정하는 바에 따른다.\n2. 본 계약은 “갑”과 “을”의 서명 또는 기명날인(전자서명을 포함한다)으로 효력이 발생된다.\n3. 본 계약은 반드시 서면의 의하여만 변경될 수 있다.'))+
+      '<div class="sign">'+P('위와 같이 연봉 및 근로계약을 체결하였음을 확인하며, 본 계약서 2통을 작성하여, 각각 서명 날인 후\n“갑”과 “을”이 1통씩 보관한다.')+
+        '<div class="date">'+f(fmtDate(d.date),"(계약일)")+'</div>'+
+        '<div class="party-sign"><b>“갑”</b><br>사업자번호 : '+COMPANY.biz+'<br>사업체명 : &nbsp;㈜리쿠스<br>대표이사 : '+f(d.ceo)+' &nbsp;&nbsp;<span class="sigspot">(인)'+sigImg(cs,csClass)+'</span>'+
+          (opt.ceoAt? '<br><span style="font-size:8.5pt;color:#666">전자서명 일시 : '+esc(fmtStamp(opt.ceoAt))+'</span>' : '')+'</div>'+
+        '<div class="party-sign"><b>“을”</b><br>생년월일 : '+f(fmtDate(d.birth))+'<br>성명 : '+f(d.name)+' &nbsp;&nbsp;<span class="sigspot">(서명 또는 인)'+sigImg(es)+'</span>'+
+          (opt.signedAt? '<br><span style="font-size:8.5pt;color:#666">전자서명 일시 : '+esc(fmtStamp(opt.signedAt))+'</span>' : '')+'</div>'+
+      '</div></div>';
+
+    var p2=head()+docno+'<div class="doc">'+
+      '<h1 style="letter-spacing:.12em">비밀유지 및 겸업금지 서약서</h1>'+
+      '<div class="oath-head">■ 성 명 : '+f(d.name)+'<br>■ 생년월일 : '+f(fmtDate(d.birth))+'<br>■ 주소 : '+f(d.addr)+'<br>■ 소속 및 직책 : '+f(d.dept)+'</div>'+
+      '<p>상기본인(이하 \'갑\'이라 함)은 '+f(fmtDate(d.date),"(계약일)")+' (주)리쿠스(이하 ‘회사’라 함)와 근로계약을 체결하여 업무를 수행하고 있음을 확인하며 아래의 내용을 준수할 것을 서약한다.</p>'+
+      P('\n1. "을"은 재직 중 및 퇴직 후에도 다음 정보를 외부에 누설하거나\n   이용해서는 아니 된다:\n   - 고객 명단, 거래처 정보, 단가 정보\n   - 미공개 기술자료, 영업전략, 사업계획\n   - 회사가 비밀로 지정한 내부 정보\n\n2. 이에 갑은 아래와 같이 회사 기밀정보의 보호 및 퇴직 후 겸업금지에 관하여 다음의 사항에 대하여 동의한다.\n')+
+      P('(1) 본 서약서는 갑이 회사의 업무수행 중 회사로부터 제공받은 독점적인 정보에 적용되며 존재형태와\n    무관하게 회사의 중요 기밀사항, 제품과 서비스, 마케팅정보 또는 고객정보, 사업계획 및 영업비밀,\n    기타 연구 및 개발 관련 사항 등을 포함한다.\n')+
+      P('(2) 갑은 이하의 내용에 동의한다.\n① 회사의 재직 중 내지 퇴직 후에도 회사의 기밀정보를 제 3자에게 공개하지 아니한다.\n② 재직 중에는 개인적 사유로 인한 회사 업무와 겸업하지 아니한다. (겸업 기간동안의 급여에 대한 환수약속)\n③ 회사를 퇴직한 후 1년 동안 회사의 승낙 없이 아래의 행위를 하지 아니한다.')+
+      '<div class="indent">'+P('1.  회사의 제품 및 서비스와 경쟁적인 관계에 있는 개인, 기업, 조합 또는 기타 사업 체에 취업 또는 경영 등의 방식으로 직·간접적으로 종사하거나 대리, 고문, 상담역, 기타 협력적 지위에서 지원하는 일\n2.  회사에 근무하고 있거나 본 서약서상의 의무를 부담하고 있는 직원을 경쟁회사 또는 사업에 권유하거나 유인하는 일\n3.  회사가 영업을 하고 있는 사업영역에 직접적, 다른 회사의 지분소유를 통한 간접적으로 회사의 상호·상표와 동일 또는 유사한 상호·상표를 사용하는 일')+'</div>'+
+      P('④ 회사의 전산 장비상의 데이터를 사적으로 보관하지 않으며 사외로 유출하지 아니한다.\n⑤ 회사와 관련된 업무를 수행하는 경우에만 사내 데이터 처리시설을 사용하며 정보자산 의 외부 발신시 회사의 통제절차를 준수한다.\n⑥ 갑이 회사의 퇴사절차에 의하여 회사의 업무수행을 중단하는 경우 갑은 회사의 요구에 따라 모든 유형의 회사의 비밀정보가 포함된 수령물과 그 사본을 반환하고, 회사내에 서 갑에 의해 작성된 모든 유·무형물을 삭제 또는 반환하고 본 규정을 충족하였음을 서면으로 보증하여야 한다.\n')+
+      '<p><b>갑은 상기 사항을 숙지하여 이를 성실히 준수하며 만일 위 사항을 위반할 경우 부정경쟁방지법에 의한 책임은 물론 현행법 및 갑과 회사와의 약정에 의거한 민․형사상의 모든 책임을 지며 분쟁이 발생시 소송은 회사의 소재지 관할 법원으로 한다.</b></p>'+
+      '<div class="sign"><div class="date">'+f(fmtDate(d.date),"(계약일)")+'</div>'+
+      '<p style="text-align:right">서 약 인 : '+f(d.name)+' &nbsp;&nbsp;<span class="sigspot">(인)'+sigImg(es)+'</span></p></div>'+
+      '<div class="to">(주)리쿠스 대표이사 귀하</div></div>';
+
+    $("preview").innerHTML='<div class="page">'+p1+foot("근로계약서")+'</div><div class="page oath">'+p2+foot("서약서")+'</div>';
+    fitPages();
+  }
+
+
+  function doPrint(name, tag){
+    var old=document.title; document.title="근로계약서_"+safeName(name)+"_"+(tag||"서명완료");
+    window.print(); setTimeout(function(){document.title=old;},500);
+  }
+  function fitPages(){
+    var pv=$("preview"); if(!pv) return;
+    var w=pv.clientWidth, z=window.innerWidth<=860? 1 : Math.min(1,(w-4)/794);
+    Array.prototype.forEach.call(pv.querySelectorAll(".page"),function(p){ p.style.zoom = z<1 ? String(z) : ""; });
+  }
+  window.addEventListener("resize", fitPages);
+  function show(id){ ["home","login","app","dash"].forEach(function(s){ $(s).classList.toggle("hidden", s!==id); }); window.scrollTo(0,0); }
+  function setTop(title, stage, buttonsHTML){ $("topTitle").textContent=title; $("stageTag").textContent=stage; $("topButtons").innerHTML=buttonsHTML||""; }
+  function hex(buf){ return Array.prototype.map.call(new Uint8Array(buf),function(b){ return (b<16?"0":"")+b.toString(16); }).join(""); }
+  function unhex(h){ var a=new Uint8Array(h.length/2); for(var i=0;i<a.length;i++) a[i]=parseInt(h.substr(i*2,2),16); return a; }
+  function checkCred(id,pw){
+    if(!(window.crypto&&crypto.subtle)) return Promise.reject(new Error("no-subtle"));
+    var enc=new TextEncoder();
+    return crypto.subtle.importKey("raw",enc.encode(String(id).trim()+":"+pw),"PBKDF2",false,["deriveBits"]).then(function(k){
+      return crypto.subtle.deriveBits({name:"PBKDF2",hash:"SHA-256",salt:unhex(CRED.salt),iterations:CRED.iter},k,256);
+    }).then(function(bits){ return hex(bits)===CRED.hash; });
+  }
+  function login(id,pw,errId,pwId,ok){
+    $(errId).textContent="확인 중…";
+    checkCred(id,pw).then(function(good){
+      if(!good){ $(errId).textContent="아이디 또는 비밀번호가 올바르지 않습니다."; $(pwId).value=""; return; }
+      $(errId).textContent=""; $(pwId).value=""; ok(pw);
+    }, function(){ $(errId).textContent="이 브라우저에서는 로그인할 수 없습니다. 최신 Chrome·Safari·Edge로 열어 주세요."; });
+  }
+  function goodUrl(u){ return /^https?:\/\/[^\s"'<>]+$/i.test(u||""); }
+  function uploadButton(P){ return goodUrl(P.upload)? '<a class="btn primary linkbtn" href="'+esc(P.upload)+'" target="_blank" rel="noopener">업로드 페이지 열기</a>' : ''; }
+  function fileName(P, step){ return "근로계약서_"+safeName(P.data.name)+"_"+step+".lkc"; }
+  function save(P, step){ download(fileName(P,step), JSON.stringify(P)); }
+  function sigs(P){ return {company:P.ceo?P.ceo.sig:"", companyKind:"", employee:P.employee?P.employee.sig:""}; }
+  function opts(P){ return {strict:true, docNo:P.docNo, ceoAt:P.ceo&&P.ceo.signedAt, signedAt:P.employee&&P.employee.signedAt}; }
+  function setLayout(sign){ $("layout").classList.toggle("signmode", !!sign); }
+  function homeBtn(){ return SESSION? '<button class="btn back" id="btnHome" type="button">← 현황판으로</button>' : '<button class="btn back" id="btnHome" type="button">처음으로</button>'; }
+  function bindHome(){ var b=$("btnHome"); if(b) b.addEventListener("click", function(){ if(SESSION) dashMode(); else location.reload(); }); }
+
+  /* ======================= HOME ======================= */
+  function home(){
+    show("home");
+    $("btnDash").onclick=function(){ show("login"); $("uid").focus(); };
+    $("btnOpen").onclick=function(){ $("homeErr").textContent=""; $("fileIn").value=""; $("fileIn").click(); };
+    $("fileIn").onchange=function(){
+      var f=this.files&&this.files[0]; if(!f) return;
+      var rd=new FileReader();
+      rd.onload=function(){
+        var P=null; try{ P=JSON.parse(rd.result); }catch(e){}
+        if(!P || P.app!=="LK-CONTRACT" || !P.data){ $("homeErr").textContent="리쿠스 근로계약서 파일(.lkc)이 아닙니다. 받은 파일을 다시 선택해 주세요."; return; }
+        if(P.stage==="draft") ceoMode(P);
+        else if(P.stage==="ceo_signed") employeeMode(P);
+        else if(P.stage==="signed" && P.employee) reviewMode(P);
+        else $("homeErr").textContent="파일 상태를 알 수 없습니다. 담당자에게 문의해 주세요.";
+      };
+      rd.onerror=function(){ $("homeErr").textContent="파일을 읽지 못했습니다. 다시 시도해 주세요."; };
+      rd.readAsText(f);
+    };
+    $("loginBack").onclick=function(){ show("home"); };
+    $("loginForm").onsubmit=function(e){
+      e.preventDefault();
+      login($("uid").value,$("upw").value,"loginErr","upw",function(pw){ SESSION={pw:pw}; dashMode(); });
+    };
+  }
+
+  /* ======================= ① 담당자 작성 ======================= */
+  function adminMode(){
+    show("app"); setLayout(false);
+    setTop("근로계약서 작성","① 담당자 작성",
+      '<button class="btn" id="btnDraftPrint" type="button">미리보기 인쇄</button> '+
+      '<button class="btn go" id="btnExport" type="button">대표 서명요청 파일 만들기</button> '+homeBtn());
+    $("side").innerHTML=
+      '<h2>1. 근로자 정보</h2>'+
+      '<div class="field"><label for="f_name">성명</label><input id="f_name"></div>'+
+      '<div class="row2"><div class="field"><label for="f_birth">생년월일</label><input id="f_birth" type="date"></div>'+
+      '<div class="field"><label for="f_dept">소속 / 직책</label><input id="f_dept"></div></div>'+
+      '<div class="field"><label for="f_addr">주소</label><input id="f_addr"></div>'+
+      '<div class="sec">2. 계약 조건</div>'+
+      '<div class="row2"><div class="field"><label for="f_date">계약(입사)일</label><input id="f_date" type="date"></div>'+
+      '<div class="field"><label for="f_salary">연봉(원)</label><input id="f_salary" inputmode="numeric"></div></div>'+
+      '<div class="field"><label for="f_type">계약 구분</label><select id="f_type"><option value="probation">신입 – 정규직(수습기간)</option><option value="intern">신입 – 인턴 후 정규직 전환</option><option value="renew">갱신(협상 조정 계약)</option></select></div>'+
+      '<div class="row2"><div class="field" id="wrap_months"><label for="f_months">수습/인턴 기간(개월)</label><input id="f_months" type="number" min="1" max="12"></div>'+
+      '<div class="field"><label for="f_payday">급여 지급일(매월)</label><input id="f_payday" type="number" min="1" max="31"></div></div>'+
+      '<div class="field"><label for="f_lunch">점심(휴게)시간</label><input id="f_lunch"></div>'+
+      '<div class="field"><label for="f_duties">담당업무 (제1조에 표시)</label><textarea id="f_duties" rows="4"></textarea><div class="hint">비워두면 제1조에 담당업무 문장이 들어가지 않습니다.</div></div>'+
+      '<div class="sec">3. 서명·회수 설정</div>'+
+      '<div class="field"><label for="f_ceo">회사측 서명 대표이사</label><select id="f_ceo"><option>구성민</option><option>이종호</option></select></div>'+
+      '<div class="field"><label for="f_upload">업로드 링크 (NAS 파일 요청 링크)</label><input id="f_upload" placeholder="https://..." inputmode="url" autocapitalize="off"><div class="hint">현황판 [설정]에 넣은 주소가 자동으로 들어갑니다. 서명 화면에 [업로드 페이지 열기] 버튼으로 나타납니다.</div></div>'+
+      '<div class="sec">4. 다음 단계</div>'+
+      '<div class="hint">상단 <b>[대표 서명요청 파일 만들기]</b>를 누르면 '+(ROOT? '<b>인사 폴더의 01_진행</b>에 파일이 자동 저장되고 현황판에 나타납니다.' : '<b>근로계약서_이름_1_대표서명요청.lkc</b> 파일이 다운로드됩니다. (폴더 미연결 상태)')+'</div>';
+    var F={name:"f_name",birth:"f_birth",addr:"f_addr",dept:"f_dept",date:"f_date",salary:"f_salary",type:"f_type",months:"f_months",payday:"f_payday",lunch:"f_lunch",duties:"f_duties",ceo:"f_ceo"};
+    function read(){ var d={}; KEYS.forEach(function(k){ d[k]=$(F[k]).value.trim(); }); d.salary=digits(d.salary); return d; }
+    function render(){ var d=read(); $("wrap_months").style.visibility=d.type==="renew"?"hidden":"visible"; renderDoc(d,{company:"",companyKind:""}); }
+    $("f_upload").value=lsGet("lk_upload_url")||"";
+    KEYS.forEach(function(k){ $(F[k]).value=DEFAULTS[k]; }); $("f_salary").value=comma(DEFAULTS.salary);
+    KEYS.forEach(function(k){ var el=$(F[k]); el.addEventListener("input",render); el.addEventListener("change",render); });
+    $("f_salary").addEventListener("input",function(){ var c=digits(this.value); this.value=c?comma(c):""; render(); });
+    $("f_type").addEventListener("change",function(){ if(this.value==="intern"&&$("f_months").value==="3")$("f_months").value="2"; if(this.value==="probation"&&$("f_months").value==="2")$("f_months").value="3"; render(); });
+    $("btnDraftPrint").onclick=function(){ doPrint(read().name,"미리보기"); };
+    bindHome();
+    $("btnExport").onclick=function(){
+      var d=read(), miss=[], up=$("f_upload").value.trim();
+      if(!d.name) miss.push("성명"); if(!d.birth) miss.push("생년월일"); if(!d.addr) miss.push("주소"); if(!d.date) miss.push("계약일"); if(!d.salary) miss.push("연봉");
+      if(up && !goodUrl(up)) miss.push("업로드 링크(https:// 로 시작해야 함)");
+      if(miss.length){ alert("다음 항목을 확인해 주세요:\n- "+miss.join("\n- ")); return; }
+      var P={app:"LK-CONTRACT",v:4,id:newId(),stage:"draft",data:d,upload:up,createdAt:new Date().toISOString()};
+      if(ROOT){
+        var btn=this; btn.disabled=true;
+        fsWrite(DIRS.run, fileName(P,"1_대표서명요청"), JSON.stringify(P)).then(function(){
+          openMsg({P:P, dir:DIRS.run, name:fileName(P,"1_대표서명요청")}, "새 계약서를 01_진행 폴더에 저장했습니다.");
+        }, function(e){ btn.disabled=false; alert("폴더에 저장하지 못했습니다: "+(e&&e.message||e)+"\n현황판에서 폴더를 다시 연결해 주세요."); });
+      } else {
+        save(P,"1_대표서명요청");
+        alert("대표 서명요청 파일을 다운로드했습니다.\n\n"+fileName(P,"1_대표서명요청"));
+      }
+    };
+    render();
+  }
+
+  /* ======================= ② 대표 확인서명 ======================= */
+  function ceoMode(P){
+    show("app"); setLayout(true);
+    setTop("근로계약서 대표 확인서명","② 대표 서명",homeBtn()); bindHome();
+    renderDoc(P.data,{company:"",companyKind:""},{strict:true});
+    $("side").innerHTML=
+      '<h2>대표이사 확인서명</h2>'+
+      '<div class="note info">'+esc(P.data.name)+' 님의 근로계약서입니다. 위 계약서와 서약서 내용(연봉·입사일·업무)을 확인한 뒤 서명해 주세요.</div>'+
+      '<div id="ceoLogin"><form id="cForm" autocomplete="off"><div class="field"><label for="cid">아이디</label><input id="cid" autocapitalize="off"></div>'+
+      '<div class="field"><label for="cpw">비밀번호</label><input id="cpw" type="password"></div>'+
+      '<button class="btn primary wide" type="submit">로그인 후 서명하기</button><div class="err" id="cErr"></div></form></div>'+
+      '<div id="ceoSign" class="hidden"><div class="sec">대표이사 '+esc(P.data.ceo)+' 서명</div>'+padHTML("cpad","여기에 서명해 주세요")+
+      '<label class="check"><input type="checkbox" id="cAgree"> 위 근로계약서와 서약서의 내용을 확인하였으며, 회사를 대표하여 서명합니다.</label>'+
+      '<button class="btn go wide" id="cSave" type="button" disabled>대표 서명 완료 · 파일 저장</button><div id="cDone"></div></div>';
+    var KEY=null, pad=null;
+    $("cForm").onsubmit=function(e){
+      e.preventDefault();
+      login($("cid").value,$("cpw").value,"cErr","cpw",function(pw){
+      KEY=pw; $("ceoLogin").classList.add("hidden"); $("ceoSign").classList.remove("hidden");
+      pad=bindPad("cpad",chk); $("cAgree").onchange=chk;
+      $("cpad").addEventListener("pointerup",function(){ chk(); renderDoc(P.data,{company:pad.isEmpty()?"":pad.toDataURL(),companyKind:""},{strict:true}); });
+      $("ceoSign").scrollIntoView({behavior:"smooth",block:"start"});
+      });
+    };
+    function chk(){ $("cSave").disabled=!($("cAgree").checked && pad && !pad.isEmpty()); }
+    $("cSave").onclick=function(){
+      var sig=pad.toDataURL(); if(!sig||!KEY) return;
+      var mac=macOf(KEY,P.data,sig);
+      var Q={app:"LK-CONTRACT",v:4,id:P.id,stage:"ceo_signed",data:P.data,upload:P.upload,createdAt:P.createdAt,
+             ceo:{sig:sig,signedAt:new Date().toISOString()},mac:mac,docNo:mac.slice(0,10).toUpperCase()};
+      save(Q,"2_입사자서명용");
+      renderDoc(Q.data,sigs(Q),opts(Q));
+      $("cDone").innerHTML='<div class="note ok" style="margin-top:12px">대표 서명이 완료되어 파일을 저장했습니다.<br><span style="font-weight:400">문서번호 <b>'+esc(Q.docNo)+'</b><br>저장된 <b>'+esc(fileName(Q,"2_입사자서명용"))+'</b> 파일을 업로드해 주세요.</span></div>'+uploadButton(Q);
+      $("cSave").disabled=true;
+    };
+  }
+
+  /* ======================= ③ 입사자 서명 ======================= */
+  function employeeMode(P){
+    show("app"); setLayout(true);
+    setTop("근로계약서 서명","③ 입사자 서명",homeBtn()); bindHome();
+    renderDoc(P.data,sigs(P),opts(P));
+    $("side").innerHTML=
+      '<h2>근로계약서 서명</h2>'+
+      '<div class="note info">'+esc(P.data.name)+'님, (주)리쿠스 입사를 환영합니다.<br>위 근로계약서와 서약서를 끝까지 확인한 뒤 아래에 서명해 주세요.</div>'+
+      '<div class="sec">본인 서명</div>'+padHTML("epad","여기에 서명해 주세요")+
+      '<label class="check"><input type="checkbox" id="agree"> 본인은 위 근로계약서 및 비밀유지·겸업금지 서약서의 내용을 모두 확인하였으며, 이에 동의하여 서명합니다.</label>'+
+      '<button class="btn go wide" id="btnSave" type="button" disabled>서명 완료 · 파일 저장</button>'+
+      '<div id="doneBox"></div>'+
+      '<div class="hint" style="margin-top:12px">문의: (주)리쿠스 경영지원 '+COMPANY.tel+'</div>';
+    var pad=bindPad("epad",chk);
+    function chk(){ $("btnSave").disabled=!($("agree").checked && pad && !pad.isEmpty()); }
+    $("agree").onchange=chk;
+    $("epad").addEventListener("pointerup",function(){ chk(); var t=sigs(P); t.employee=pad.isEmpty()?"":pad.toDataURL(); renderDoc(P.data,t,opts(P)); });
+    $("btnSave").onclick=function(){
+      var sig=pad.toDataURL(); if(!sig) return;
+      var Q=JSON.parse(JSON.stringify(P)); Q.stage="signed"; Q.employee={sig:sig,signedAt:new Date().toISOString(),agree:true};
+      save(Q,"3_서명완료");
+      renderDoc(Q.data,sigs(Q),opts(Q));
+      $("doneBox").innerHTML='<div class="note ok" style="margin-top:12px">서명이 완료되어 파일을 저장했습니다.<br><span style="font-weight:400">저장된 <b>'+esc(fileName(Q,"3_서명완료"))+'</b> 파일을 아래 버튼으로 제출해 주세요.</span></div>'+uploadButton(Q);
+      $("btnSave").disabled=true;
+    };
+  }
+
+  /* ======================= ④ 담당자 확인·보관 ======================= */
+  function reviewMode(P, ctx){
+    ctx=ctx||{};
+    show("app"); setLayout(false);
+    setTop("근로계약서 서명 완료본","④ 확인 · 보관",'<button class="btn primary" id="btnPrint" type="button" disabled>인쇄 / PDF 저장</button> '+homeBtn()); bindHome();
+    renderDoc(P.data,sigs(P),opts(P));
+    $("side").innerHTML=
+      '<h2>담당자 확인</h2>'+
+      '<div id="verifyBox"><div class="note warn">로그인하면 대표가 서명한 원본과 내용이 같은지 확인한 뒤 인쇄할 수 있습니다.</div>'+
+      '<form id="vForm" autocomplete="off"><div class="field"><label for="vid">아이디</label><input id="vid" autocapitalize="off"></div><div class="field"><label for="vpw">비밀번호</label><input id="vpw" type="password"></div>'+
+      '<button class="btn primary wide" type="submit">로그인 및 원본 대조</button><div class="err" id="vErr"></div></form></div>'+
+      '<div id="archBox"></div>'+
+      '<div class="sec">서명 정보</div>'+
+      '<div class="hint">문서번호: <b>'+esc(P.docNo)+'</b><br>근로자: '+esc(P.data.name)+'<br>대표 서명('+esc(P.data.ceo)+'): '+esc(fmtStamp(P.ceo.signedAt))+'<br>근로자 서명: '+esc(fmtStamp(P.employee.signedAt))+
+      (ctx.src? '<br>파일 위치: <span id="srcLoc">인사\\'+esc(BASE)+'\\'+esc(ctx.src.dir)+'\\'+esc(ctx.src.name)+'</span>' : '')+'</div>';
+    function verify(pw){
+      var ok = !!(P.ceo && macOf(pw,P.data,P.ceo.sig)===P.mac);
+      $("verifyBox").innerHTML = ok
+        ? '<div class="note ok">✓ 원본 대조 완료<br><span style="font-weight:400">대표가 서명한 계약 내용·대표 서명과 동일합니다.</span></div>'
+        : '<div class="note bad">⚠ 내용이 변경되었습니다<br><span style="font-weight:400">대표가 서명한 원본과 계약 내용 또는 대표 서명이 다릅니다. 이 파일은 사용하지 말고 대표에게 보고하세요.</span></div>';
+      $("btnPrint").disabled=!ok;
+      $("btnPrint").onclick=function(){ doPrint(P.data.name,"서명완료"); };
+      if(!ok) return;
+      if(ctx.archived){ $("archBox").innerHTML='<div class="note info">03_최종보관 폴더에 보관된 계약서입니다. 필요하면 다시 인쇄할 수 있습니다.</div>'; return; }
+      if(ctx.src && ROOT){
+        $("archBox").innerHTML='<div class="sec">보관 처리</div><div class="hint">누르면 이 파일이 <b>03_최종보관</b> 폴더로 옮겨지고 현황판에서 "보관 완료"로 바뀝니다.</div>'+
+          '<button class="btn go wide" id="btnArch" type="button" style="margin-top:8px">최종보관 폴더로 옮기기</button>';
+        $("btnArch").onclick=function(){
+          var btn=this; btn.disabled=true;
+          var nm=archName(P), hn=viewName(P), page=signedHtml(P);
+          fsWrite(DIRS.done, nm, JSON.stringify(P)).then(function(){ return fsWrite(DIRS.done, hn, page); }).then(function(){ return fsRemove(ctx.src.dir, ctx.src.name); }).then(function(){
+            ctx={src:{dir:DIRS.done,name:nm},archived:true};
+            if($("srcLoc")) $("srcLoc").textContent="인사\\"+BASE+"\\"+DIRS.done+"\\"+nm;
+            $("archBox").innerHTML='<div class="note ok">보관 완료<br><span style="font-weight:400">인사\\'+esc(BASE)+'\\'+esc(DIRS.done)+'\\'+esc(nm)+'<br>열람용 서명본: '+esc(hn)+'<br>이제 [인쇄 / PDF 저장]으로 2부 출력해 1부는 입사자에게 전달하세요.</span></div>';
+          }, function(e){ btn.disabled=false; alert("옮기지 못했습니다: "+(e&&e.message||e)); });
+        };
+      }
+    }
+    if(SESSION){ verify(SESSION.pw); return; }
+    $("vForm").onsubmit=function(e){
+      e.preventDefault();
+      login($("vid").value,$("vpw").value,"vErr","vpw",verify);
+    };
+  }
+
+  /* ======================= 안내 문자 자동 생성 ======================= */
+  var WD=["일","월","화","수","목","금","토"];
+  function isoDay(dt){ function z(n){return (n<10?"0":"")+n;} return dt.getFullYear()+"-"+z(dt.getMonth()+1)+"-"+z(dt.getDate()); }
+  function md(v){ if(!v) return ""; var p=v.split("-"), dt=new Date(+p[0],+p[1]-1,+p[2]); return (+p[1])+"월 "+(+p[2])+"일("+WD[dt.getDay()]+")"; }
+  function addDays(n){ var d=new Date(); d.setDate(d.getDate()+n); return isoDay(d); }
+  function pageUrlDefault(){
+    var saved=lsGet("lk_page_url"); if(saved) return saved;
+    if(/^https?:$/.test(location.protocol)) return location.origin+location.pathname.replace(/index\.html?$/i,"");
+    return "";
+  }
+  function copyText(text, btn){
+    function ok(){ btn.textContent="복사됨 ✓"; btn.classList.add("done"); setTimeout(function(){ btn.textContent="복사"; btn.classList.remove("done"); },1600); }
+    function fallback(){ var t=document.createElement("textarea"); t.value=text; t.style.position="fixed"; t.style.opacity="0"; document.body.appendChild(t); t.select();
+      try{ document.execCommand("copy"); ok(); }catch(e){ alert("복사가 안 되면 글상자를 길게 눌러 전체 선택 후 복사해 주세요."); } t.remove(); }
+    if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).then(ok, fallback); } else fallback();
+  }
+  // container: element · getData(): contract data · getUpload(): upload link · stage: draft | ceo_signed | signed
+  function msgPanel(box, getData, getUpload, stage, mopt){
+    mopt=mopt||{};
+    var rec={draft:"ceo", ceo_signed:"emp", signed:"done"}[stage]||"ceo";
+    box.innerHTML=
+      '<div class="field"><label for="m_page">서명 페이지 주소</label><input id="m_page" inputmode="url" autocapitalize="off" placeholder="https://btypenine.github.io/leekoos-contract/"><div class="hint">한 번 넣으면 이 PC에 기억됩니다.</div></div>'+
+      (mopt.path? '<div class="field"><label>공유 링크를 만들 파일</label><div class="path">'+esc(mopt.path)+'</div><div class="hint">NAS(File Station)에서 이 파일을 오른쪽 클릭 → <b>공유</b> → 비밀번호·유효기간 설정 → 링크 복사 후 아래에 붙여넣으세요.</div></div>' : '')+
+      '<div class="field"><label for="m_share">NAS 공유 링크 (이번에 보낼 파일)</label><input id="m_share" inputmode="url" autocapitalize="off" placeholder="https://..."></div>'+
+      '<div class="row2"><div class="field"><label for="m_pw">공유 링크 비밀번호</label><input id="m_pw" autocapitalize="off"></div>'+
+      '<div class="field"><label for="m_exp">링크 유효기한</label><input id="m_exp" type="date"></div></div>'+
+      '<div class="field"><label for="m_due">서명 회신 기한</label><input id="m_due" type="date"></div>'+
+      '<div id="m_warn" class="hint" style="color:var(--warn);margin-bottom:10px"></div>'+
+      '<div class="msg'+(rec==="ceo"?" rec":"")+'"><div class="msg-h"><b>① 대표용 서명 요청</b>'+(rec==="ceo"?'<span class="tag">지금 보낼 문자</span>':'')+'<button class="btn copy" type="button" data-t="t_ceo">복사</button></div><textarea id="t_ceo" rows="9" readonly></textarea></div>'+
+      '<div class="msg'+(rec==="emp"?" rec":"")+'"><div class="msg-h"><b>② 입사자 서명 안내</b>'+(rec==="emp"?'<span class="tag">지금 보낼 문자</span>':'')+'<button class="btn copy" type="button" data-t="t_emp">복사</button></div><textarea id="t_emp" rows="14" readonly></textarea></div>'+
+      '<div class="msg'+(rec==="ceo"||rec==="emp"?" rec":"")+'"><div class="msg-h"><b>③ 비밀번호 (①·② 다음에 따로)</b><button class="btn copy" type="button" data-t="t_pw">복사</button></div><textarea id="t_pw" rows="2" readonly></textarea></div>'+
+      '<div class="msg'+(rec==="done"?" rec":"")+'"><div class="msg-h"><b>④ 제출 확인 회신</b>'+(rec==="done"?'<span class="tag">지금 보낼 문자</span>':'')+'<button class="btn copy" type="button" data-t="t_done">복사</button></div><textarea id="t_done" rows="3" readonly></textarea></div>';
+    $("m_page").value=pageUrlDefault(); $("m_exp").value=addDays(3); $("m_due").value=addDays(3);
+    var saved=null; if(mopt.key){ try{ saved=JSON.parse(lsGet(mopt.key)||"null"); }catch(e){} }
+    if(saved){ ["m_share","m_pw","m_exp","m_due"].forEach(function(id){ if(saved[id]) $(id).value=saved[id]; }); }
+    function remember(){ if(!mopt.key) return; var o={}; ["m_share","m_pw","m_exp","m_due"].forEach(function(id){ o[id]=$(id).value; }); lsSet(mopt.key, JSON.stringify(o)); if(mopt.onSave) mopt.onSave(); }
+    function v(id,ph){ var x=$(id).value.trim(); return x||ph; }
+    function refresh(){
+      var d=getData(), up=(getUpload&&getUpload())||lsGet("lk_upload_url")||"", name=d.name||"[이름]";
+      var page=v("m_page","[서명 페이지 주소]"), share=v("m_share","[공유 링크]"), pw=v("m_pw","[비밀번호]");
+      var exp=md($("m_exp").value)||"[유효기한]", due=md($("m_due").value)||"[회신 기한]", start=md(d.date)||"[입사일]";
+      var sal=d.salary? comma(d.salary)+"원" : "[연봉]";
+      var upLine = goodUrl(up)? "" : "\n(업로드 링크: [파일 요청 링크])";
+      $("t_ceo").value=
+        "[리쿠스 경영지원] "+name+"님 근로계약서 대표 확인서명 요청드립니다.\n"+
+        "- 연봉 "+sal+" / 입사일 "+start+"\n"+
+        "- 소속 "+(d.dept||"-")+"\n\n"+
+        "1. 파일 받기: "+share+"\n   (비밀번호는 다음 문자로 보내드립니다)\n"+
+        "2. 서명 페이지: "+page+"\n   [계약서 파일 열기] → 로그인 → 서명\n"+
+        "3. 서명 후 [업로드 페이지 열기]로 제출 부탁드립니다."+upLine;
+      $("t_emp").value=
+        "안녕하세요, "+name+"님. (주)리쿠스 경영지원팀입니다.\n입사를 진심으로 환영합니다.\n\n"+
+        "근로계약서를 휴대폰으로 서명해 주세요. (약 5분)\n\n"+
+        "1. 계약서 파일 받기 ("+exp+"까지 유효)\n"+share+"\n→ 비밀번호는 다음 문자로 보내드립니다.\n\n"+
+        "2. 아래 서명 페이지를 열고 [계약서 파일 열기] → 방금 받은 파일 선택\n"+page+"\n\n"+
+        "3. 내용 확인 후 서명 → [서명 완료 · 파일 저장]\n\n"+
+        "4. 화면의 [업로드 페이지 열기]에서 저장된 파일 제출"+upLine+"\n\n"+
+        due+"까지 부탁드리며, 어려운 점은 이 번호로 연락주세요.\n감사합니다.";
+      $("t_pw").value="[리쿠스] 근로계약서 파일 비밀번호: "+pw;
+      $("t_done").value=name+"님, 제출해 주신 근로계약서 확인했습니다.\n서명 완료본은 입사일("+start+")에 출력해서 드리겠습니다. 감사합니다.";
+      var miss=[]; if(!$("m_page").value.trim()) miss.push("서명 페이지 주소"); if(!$("m_share").value.trim()) miss.push("공유 링크"); if(!$("m_pw").value.trim()) miss.push("비밀번호");
+      $("m_warn").textContent = miss.length? "※ 비어 있는 칸: "+miss.join(", ")+" — 입력하면 문자에 자동으로 들어갑니다. (지금은 [ ] 표시)" : "";
+    }
+    ["m_page","m_share","m_pw","m_exp","m_due"].forEach(function(id){ $(id).addEventListener("input",refresh); $(id).addEventListener("change",function(){ refresh(); remember(); }); $(id).addEventListener("input",remember); });
+    $("m_page").addEventListener("change",function(){ var x=this.value.trim(); if(goodUrl(x)) lsSet("lk_page_url",x); });
+    Array.prototype.forEach.call(box.querySelectorAll(".btn.copy"),function(b){ b.addEventListener("click",function(){ copyText($(b.getAttribute("data-t")).value,b); }); });
+    refresh();
+    return refresh;
+  }
+
+
+  /* ======================= 인사 폴더 자동 처리 ======================= */
+  var SESSION=null, ROOT=null, BASEH=null, BUSY=false, LASTLOG=[];
+  var BASE="근로계약서", DIRS={run:"01_진행", back:"02_회수", done:"03_최종보관"};
+  var RANK={draft:0, ceo_signed:1, signed:2};
+  var STEPNAME={draft:"1_대표서명요청", ceo_signed:"2_입사자서명용", signed:"3_서명완료"};
+  function newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+  function keyOf(P){ return P.id || (P.data.name+"|"+P.createdAt); }
+  function archName(P){ return "근로계약서_"+safeName(P.data.name)+"_"+(P.data.date||"")+"_"+(P.docNo||"")+".lkc"; }
+  function viewName(P){ return "근로계약서_"+safeName(P.data.name)+"_"+(P.data.date||"")+"_서명완료(열람용).html"; }
+  // 서명 완료본을 스크립트 없는 단일 HTML로 저장 — 이 도구 없이도 더블클릭으로 열람·인쇄 가능
+  function signedHtml(P){
+    renderDoc(P.data,sigs(P),opts(P));
+    var pages=$("preview").querySelectorAll(".page"); Array.prototype.forEach.call(pages,function(p){ p.style.zoom=""; });
+    var body=$("preview").innerHTML; fitPages();
+    var css=document.querySelector("style").textContent;
+    return '<!DOCTYPE html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'+
+      '<title>근로계약서_'+esc(P.data.name)+'_서명완료</title><style>'+css+' body{background:#eef1f5} main.preview{align-items:center!important;overflow:visible!important} .static-note{max-width:794px;margin:14px auto 0;font-size:12px;color:#5b6474;padding:0 8px} @media print{.static-note{display:none}}</style></head><body>'+
+      '<div class="static-note">(주)리쿠스 근로계약서 서명 완료본 · 문서번호 '+esc(P.docNo||"")+' · 대표 서명 '+esc(fmtStamp(P.ceo.signedAt))+' · 근로자 서명 '+esc(fmtStamp(P.employee.signedAt))+' · 인쇄: Ctrl+P</div>'+
+      '<main class="preview" style="padding:14px 8px 40px">'+body+'</main></body></html>';
+  }
+  function fsOK(){ return typeof window.showDirectoryPicker==="function"; }
+  function idb(){ return new Promise(function(res,rej){ try{ var r=indexedDB.open("lk-contract",1); r.onupgradeneeded=function(){ r.result.createObjectStore("kv"); }; r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; }catch(e){ rej(e); } }); }
+  function kvGet(k){ return idb().then(function(db){ return new Promise(function(res){ var q=db.transaction("kv").objectStore("kv").get(k); q.onsuccess=function(){ res(q.result||null); }; q.onerror=function(){ res(null); }; }); }).catch(function(){ return null; }); }
+  function kvSet(k,v){ return idb().then(function(db){ return new Promise(function(res){ var t=db.transaction("kv","readwrite"); t.objectStore("kv").put(v,k); t.oncomplete=function(){ res(true); }; t.onerror=function(){ res(false); }; }); }).catch(function(){ return false; }); }
+  async function useRoot(h){
+    BASEH = h.name===BASE ? h : await h.getDirectoryHandle(BASE,{create:true});
+    for (var k in DIRS) await BASEH.getDirectoryHandle(DIRS[k],{create:true});
+    ROOT=h;
+  }
+  async function reconnect(interactive){
+    var h = ROOT || await kvGet("root"); if(!h) return "none";
+    if(h.queryPermission){
+      var p=await h.queryPermission({mode:"readwrite"});
+      if(p!=="granted"){ if(!interactive) return "prompt"; p=await h.requestPermission({mode:"readwrite"}); if(p!=="granted") return "prompt"; }
+    }
+    await useRoot(h); return "ok";
+  }
+  async function pickFolder(){ var h=await window.showDirectoryPicker({id:"lk-insa",mode:"readwrite"}); await useRoot(h); await kvSet("root",h); }
+  async function sub(dir){ return BASEH.getDirectoryHandle(dir,{create:true}); }
+  async function fsWrite(dir,name,text){ var d=await sub(dir); var fh=await d.getFileHandle(name,{create:true}); var w=await fh.createWritable(); await w.write(text); await w.close(); }
+  async function fsRemove(dir,name){ var d=await sub(dir); try{ await d.removeEntry(name); }catch(e){ if(!e||e.name!=="NotFoundError") throw e; } }
+  async function readDir(dh, dir, depth, out){
+    for await (var ent of dh.entries()){
+      var name=ent[0], h=ent[1];
+      if(name.charAt(0)==="." || name.charAt(0)==="#" || name==="@eaDir") continue;
+      if(h.kind==="directory"){ if(depth>0) await readDir(h, dir, depth-1, out); continue; }
+      var f=await h.getFile(); if(f.size>3e6) continue;
+      var P=null; try{ P=JSON.parse(await f.text()); }catch(e){}
+      out.push({dir:dir, name:name, dh:dh, P:(P&&P.app==="LK-CONTRACT"&&P.data)?P:null, mtime:f.lastModified});
+    }
+    return out;
+  }
+  async function fsList(dir, depth){ return readDir(await sub(dir), dir, depth||0, []); }
+
+  // 02_회수에 들어온 파일을 단계에 맞게 01_진행으로 옮기고 이전 단계 파일을 정리
+  async function sync(){
+    var log=[];
+    var run=await fsList(DIRS.run), back=await fsList(DIRS.back,2), done=await fsList(DIRS.done);
+    var cur={}, arch={};
+    done.forEach(function(e){ if(e.P) arch[keyOf(e.P)]=e; });
+    run.forEach(function(e){ if(!e.P) return; var k=keyOf(e.P); if(!cur[k] || RANK[e.P.stage]>RANK[cur[k].P.stage]) cur[k]=e; });
+    for (var i=0;i<back.length;i++){
+      var e=back[i];
+      if(!e.P){ if(!/\.(tmp|part|crdownload)$/i.test(e.name)) log.push("⚠ 02_회수의 '"+e.name+"' 은(는) 계약서 파일이 아니어서 건너뛰었습니다."); continue; }
+      var k=keyOf(e.P), have=cur[k];
+      if(arch[k] || e.P.stage==="draft" || (have && RANK[e.P.stage]<=RANK[have.P.stage])){ await e.dh.removeEntry(e.name).catch(function(){}); continue; }
+      var nm=fileName(e.P, STEPNAME[e.P.stage]);
+      await fsWrite(DIRS.run, nm, JSON.stringify(e.P));
+      await e.dh.removeEntry(e.name).catch(function(){});
+      cur[k]={dir:DIRS.run, name:nm, P:e.P, mtime:Date.now()};
+      log.push("✓ "+e.P.data.name+" 님 "+(e.P.stage==="ceo_signed"?"대표 서명본":"입사자 서명 완료본")+"을 회수해 01_진행으로 옮겼습니다.");
+    }
+    for (i=0;i<run.length;i++){
+      var r=run[i]; if(!r.P) continue;
+      var k2=keyOf(r.P), c=cur[k2];
+      if(arch[k2] || (c && c.name!==r.name)) await fsRemove(DIRS.run, r.name);
+    }
+    Object.keys(arch).forEach(function(k){ delete cur[k]; });
+    var act=Object.keys(cur).map(function(k){ return cur[k]; });
+    act.sort(function(a,b){ return String(b.P.createdAt).localeCompare(String(a.P.createdAt)); });
+    var ar=done.filter(function(e){ return e.P; }).sort(function(a,b){ return b.mtime-a.mtime; });
+    return {act:act, arch:ar, log:log};
+  }
+
+  function macOk(P){ return !!(SESSION && P.ceo && P.mac && macOf(SESSION.pw,P.data,P.ceo.sig)===P.mac); }
+  function msgKey(P){ return "lk_msg_"+keyOf(P)+"_"+P.stage; }
+
+  /* ======================= 담당자 업무 현황판 ======================= */
+  var TIMER=null;
+  function dashMode(){
+    show("dash");
+    $("dOut").onclick=function(){ location.reload(); };
+    $("dSetBtn").onclick=function(){ $("dSettings").classList.toggle("hidden"); };
+    $("s_page").value=pageUrlDefault(); $("s_upload").value=lsGet("lk_upload_url")||"";
+    if(!lsGet("lk_upload_url") || !pageUrlDefault()) $("dSettings").classList.remove("hidden");
+    $("s_save").onclick=function(){
+      var pg=$("s_page").value.trim(), up=$("s_upload").value.trim();
+      if((pg && !goodUrl(pg)) || (up && !goodUrl(up))){ $("s_msg").textContent="주소는 https:// 로 시작해야 합니다."; return; }
+      lsSet("lk_page_url",pg); lsSet("lk_upload_url",up); $("s_msg").textContent="저장했습니다 ✓";
+      setTimeout(function(){ $("dSettings").classList.add("hidden"); $("s_msg").textContent=""; },900);
+    };
+    $("dNew").onclick=function(){ adminMode(); };
+    $("dRefresh").onclick=function(){ refreshDash(true); };
+    if(!fsOK()){ manualCard(); return; }
+    if(ROOT){ connected(); return; }
+    reconnect(false).then(function(st){ if(st==="ok") connected(); else connectCard(st); }, function(){ connectCard("none"); });
+  }
+  function connectCard(st){
+    $("dFolder").textContent="폴더 미연결"; $("dList").innerHTML="";
+    $("dConnect").innerHTML='<div class="dcard connect"><h2>'+(st==="prompt"?"인사 폴더 사용 허용":"인사 폴더 연결 (처음 한 번)")+'</h2>'+
+      (st==="prompt"
+        ? '<p>보안을 위해 브라우저를 다시 열면 폴더 사용 허용을 한 번 더 묻습니다. 아래 버튼을 누르고 <b>[파일 수정 허용]</b>을 선택하세요.</p><button class="btn primary" id="dGrant" type="button">인사 폴더 사용 허용</button> <button class="btn" id="dPick" type="button">다른 폴더 선택</button>'
+        : '<p>아래 버튼을 누르고 <b>Z:\\00_0 Leekoos\\인사</b> 폴더를 선택한 뒤 <b>[폴더 선택] → [파일 수정 허용]</b>을 누르세요.<br>그 안에 <b>근로계약서\\01_진행 · 02_회수 · 03_최종보관</b> 폴더가 자동으로 만들어지고, 이후 파일 저장·회수·이동·보관은 이 현황판이 알아서 합니다.</p><button class="btn primary" id="dPick" type="button">인사 폴더 연결</button>')+
+      '<div class="err" id="dErr" style="text-align:left"></div></div>';
+    var g=$("dGrant"); if(g) g.onclick=function(){ reconnect(true).then(function(s){ if(s==="ok") connected(); else $("dErr").textContent="허용되지 않았습니다. 다시 눌러 [파일 수정 허용]을 선택해 주세요."; }, function(e){ $("dErr").textContent=String(e&&e.message||e); }); };
+    $("dPick").onclick=function(){ pickFolder().then(connected, function(e){ if(e&&e.name==="AbortError") return; $("dErr").textContent="폴더를 연결하지 못했습니다: "+(e&&e.message||e); }); };
+  }
+  function connected(){
+    $("dConnect").innerHTML="";
+    $("dFolder").textContent="📁 "+ROOT.name+(BASEH!==ROOT?"\\"+BASE:"")+" 연결됨";
+    refreshDash(false);
+    if(!TIMER) TIMER=setInterval(function(){ if(!$("dash").classList.contains("hidden") && !document.hidden) refreshDash(false); }, 30000);
+    window.addEventListener("focus", function(){ if(!$("dash").classList.contains("hidden")) refreshDash(false); });
+  }
+  function refreshDash(manual){
+    if(!ROOT || BUSY) return; BUSY=true;
+    if(manual) $("dLog").textContent="새로고침 중…";
+    sync().then(function(r){
+      BUSY=false; if(r.log.length) LASTLOG=r.log;
+      drawDash(r);
+      $("dLog").textContent="마지막 확인 "+fmtStamp(new Date().toISOString())+" · 30초마다 자동으로 02_회수 폴더를 확인합니다.";
+    }, function(e){
+      BUSY=false;
+      if(e && (e.name==="NotAllowedError" || e.name==="SecurityError")){ ROOT=null; connectCard("prompt"); return; }
+      if(e && e.name==="NotFoundError"){ ROOT=null; connectCard("none"); return; }
+      $("dLog").textContent="⚠ 폴더를 읽지 못했습니다: "+(e&&e.message||e)+" (NAS 연결을 확인한 뒤 [새로고침])";
+    });
+  }
+  function drawDash(r){
+    var c={draft:0,ceo_signed:0,signed:0};
+    r.act.forEach(function(e){ c[e.P.stage]++; });
+    $("dNotice").innerHTML = LASTLOG.length? '<div class="note '+(/^⚠/.test(LASTLOG[0])?'warn':'ok')+'" style="margin-bottom:14px">'+LASTLOG.map(esc).join("<br>")+'</div>' : '';
+    var h='<div class="dsum">'+
+      '<div><b>'+c.draft+'</b><span>대표 서명 대기</span></div>'+
+      '<div><b>'+c.ceo_signed+'</b><span>입사자 서명 대기</span></div>'+
+      '<div class="'+(c.signed?'hot':'')+'"><b>'+c.signed+'</b><span>확인·보관 필요</span></div>'+
+      '<div><b>'+r.arch.length+'</b><span>보관 완료</span></div></div>';
+    h+='<div class="dsec">진행 중</div>';
+    if(!r.act.length) h+='<div class="dcard" style="text-align:center;color:var(--muted);font-size:13px">진행 중인 계약서가 없습니다. 오른쪽 위 <b>[+ 새 계약서 작성]</b>으로 시작하세요.</div>';
+    else {
+      h+='<table class="dt"><thead><tr><th>이름</th><th>소속 / 직책</th><th>입사일</th><th>연봉</th><th>상태</th><th>할 일</th><th></th></tr></thead><tbody>';
+      r.act.forEach(function(e,i){
+        var P=e.P, st=P.stage, pill, todo, btn, sent=!!lsGet(msgKey(P));
+        if(st==="draft"){ pill='<span class="pill s0">대표 서명 대기</span>'; todo='대표에게 서명 요청 문자 보내기<small>'+(sent?'문자 정보 입력됨 · 대표 서명본이 02_회수에 올라오면 자동 반영':'공유 링크 만들고 문자 보내기 전')+'</small>'; btn='<button class="btn primary" data-a="msg" data-i="'+i+'">문자 만들기</button>'; }
+        else if(st==="ceo_signed"){
+          if(!macOk(P)){ pill='<span class="pill bad">⚠ 서명본 이상</span>'; todo='대표 서명본이 원본과 다릅니다<small>대표에게 다시 서명 요청하세요</small>'; btn='<button class="btn" data-a="msg" data-i="'+i+'">보기</button>'; }
+          else { pill='<span class="pill s1">입사자 서명 대기</span>'; todo='입사자에게 서명 안내 문자 보내기<small>'+(sent?'문자 정보 입력됨 · 서명 완료본이 02_회수에 올라오면 자동 반영':'공유 링크 만들고 문자 보내기 전')+'</small>'; btn='<button class="btn primary" data-a="msg" data-i="'+i+'">문자 만들기</button>'; }
+        } else {
+          if(!macOk(P)){ pill='<span class="pill bad">⚠ 내용 변경됨</span>'; todo='원본과 다릅니다<small>사용하지 말고 대표에게 보고</small>'; btn='<button class="btn" data-a="rev" data-i="'+i+'">보기</button>'; }
+          else { pill='<span class="pill s2">서명 완료</span>'; todo='원본 대조 확인 후 보관·인쇄<small>입사자 서명 '+esc(fmtStamp(P.employee.signedAt))+'</small>'; btn='<button class="btn go" data-a="rev" data-i="'+i+'">확인·보관</button>'; }
+        }
+        h+='<tr><td><b>'+esc(P.data.name)+'</b></td><td>'+esc(P.data.dept)+'</td><td>'+esc(P.data.date)+'</td><td>'+(P.data.salary?comma(P.data.salary)+'원':'')+'</td><td>'+pill+'</td><td class="todo">'+todo+'</td><td class="act">'+btn+'</td></tr>';
+      });
+      h+='</tbody></table>';
+    }
+    if(r.arch.length){
+      h+='<div class="dsec">보관 완료 (03_최종보관)</div><table class="dt"><thead><tr><th>이름</th><th>소속 / 직책</th><th>입사일</th><th>문서번호</th><th>근로자 서명</th><th></th></tr></thead><tbody>';
+      r.arch.slice(0,30).forEach(function(e,i){ var P=e.P;
+        h+='<tr><td>'+esc(P.data.name)+'</td><td>'+esc(P.data.dept)+'</td><td>'+esc(P.data.date)+'</td><td>'+esc(P.docNo||"")+'</td><td>'+(P.employee?esc(fmtStamp(P.employee.signedAt)):"")+'</td><td class="act"><button class="btn" data-a="arch" data-i="'+i+'">열기·인쇄</button></td></tr>'; });
+      h+='</tbody></table>';
+    }
+    $("dList").innerHTML=h;
+    Array.prototype.forEach.call($("dList").querySelectorAll("button[data-a]"),function(b){
+      b.onclick=function(){ var a=b.getAttribute("data-a"), i=+b.getAttribute("data-i");
+        if(a==="msg") openMsg(r.act[i]);
+        else if(a==="rev") reviewMode(r.act[i].P,{src:r.act[i]});
+        else reviewMode(r.arch[i].P,{src:r.arch[i],archived:true});
+      };
+    });
+  }
+  function openMsg(e, notice){
+    var P=e.P;
+    show("app"); setLayout(false);
+    setTop("안내 문자 보내기", P.stage==="draft"?"② 대표 서명 요청":"③ 입사자 서명 안내", homeBtn()); bindHome();
+    renderDoc(P.data,sigs(P),opts(P));
+    var label={draft:"대표 서명 대기 → ① 대표용 문자 + ③ 비밀번호를 보내세요.",ceo_signed:"입사자 서명 대기 → ② 입사자 안내 + ③ 비밀번호를 보내세요.",signed:"서명 완료 → 현황판에서 [확인·보관]을 누르세요."}[P.stage]||"";
+    $("side").innerHTML=(notice? '<div class="note ok">'+esc(notice)+'</div>' : '')+
+      '<h2>'+esc(P.data.name)+' 님</h2><div class="stagebox">'+esc(label)+'</div><div id="msgBox"></div>';
+    msgPanel($("msgBox"), function(){ return P.data; }, function(){ return P.upload||""; }, P.stage,
+      {key:msgKey(P), path: e.dir? "인사\\"+BASE+"\\"+e.dir+"\\"+e.name : ""});
+    window.scrollTo(0,0);
+  }
+  function manualCard(){
+    $("dFolder").textContent="수동 모드";
+    $("dConnect").innerHTML='<div class="dcard connect"><h2>이 브라우저는 폴더 자동 처리를 지원하지 않습니다</h2>'+
+      '<p>인사 폴더 자동 저장·회수·보관은 <b>PC의 Chrome 또는 Edge</b>에서만 됩니다. 이 페이지 주소를 PC의 Chrome/Edge로 열어 주세요.<br>지금은 수동 방식으로 쓸 수 있습니다: 새 계약서는 파일로 다운로드되고, 받은 파일은 아래 버튼으로 엽니다.</p>'+
+      '<button class="btn primary" id="dOpenFile" type="button">받은 계약서 파일 열기</button><input type="file" id="dFile" class="hidden"><div class="err" id="dErr" style="text-align:left"></div></div>';
+    $("dOpenFile").onclick=function(){ $("dFile").value=""; $("dFile").click(); };
+    $("dFile").onchange=function(){
+      var f=this.files&&this.files[0]; if(!f) return;
+      var rd=new FileReader(); rd.onload=function(){
+        var P=null; try{ P=JSON.parse(rd.result); }catch(e){}
+        if(!P||P.app!=="LK-CONTRACT"||!P.data){ $("dErr").textContent="리쿠스 근로계약서 파일(.lkc)이 아닙니다."; return; }
+        if(P.stage==="signed" && P.employee) reviewMode(P); else openMsg({P:P});
+      }; rd.readAsText(f);
+    };
+  }
+
+  home();
+})();
+</script>
+</body>
+</html>
