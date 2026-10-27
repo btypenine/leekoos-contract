@@ -240,12 +240,14 @@
 
   // 이름·회사 코드 입력 (기기당 한 번)
   function loginSheet(back){
-    var h='<div class="head"><div class="nmb">글쓰기 준비</div><div class="hint">이 휴대폰에서 처음 한 번만 입력하면 됩니다</div></div>'+
+    var h='<div class="head"><div class="nmb">본인 확인 (처음 한 번만)</div></div>'+
+      '<div class="me" style="display:block;line-height:1.6">✍ 한마디·댓글을 쓰기 전에 <b>누구인지</b> 확인합니다.<br>확인이 끝나면 <b>다음 화면에서 글을 씁니다.</b> 이 휴대폰에서는 다시 묻지 않습니다.</div>'+
       '<label class="lab" for="lName">내 이름</label><select class="field" id="lName"><option value="">선택하세요</option>'+
       all.map(function(x){ return '<option'+(x.p.name===ME.name?' selected':'')+'>'+esc(x.p.name)+'</option>'; }).join("")+'<option value="__other">목록에 없음 (직접 입력)</option></select>'+
       '<input class="field" id="lOther" maxlength="20" placeholder="이름 직접 입력" hidden>'+
-      '<label class="lab" for="lCode">회사 글쓰기 코드</label><input class="field" id="lCode" autocomplete="off" placeholder="한비로 공지에 있는 코드" value="'+esc(ME.code)+'">'+
-      '<div class="msg" id="lmsg"></div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn pri" style="flex:1;justify-content:center;padding:12px" type="button" id="lOk">확인</button><button class="btn" style="flex:1;justify-content:center;padding:12px" type="button" id="lBack">취소</button></div>';
+      '<label class="lab" for="lCode">회사 코드 <span style="font-weight:400;color:var(--muted)">— 한비로 공지에 적힌 코드</span></label><input class="field" id="lCode" autocomplete="off" autocapitalize="off" placeholder="예: 1234 (글 내용 아님)" value="'+esc(ME.code)+'">'+
+      '<div class="hint" style="text-align:left;margin-top:6px">※ 이 칸은 <b>글 내용을 쓰는 곳이 아닙니다.</b> 코드를 모르면 한비로 공지를 보거나 경영지원에 문의해 주세요.</div>'+
+      '<div class="msg" id="lmsg"></div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn pri" style="flex:1;justify-content:center;padding:12px" type="button" id="lOk">확인하고 글쓰기</button><button class="btn" style="flex:1;justify-content:center;padding:12px" type="button" id="lBack">취소</button></div>';
     $("sbox").innerHTML=h;
     $("lName").onchange=function(){ $("lOther").hidden=this.value!=="__other"; };
     $("lBack").onclick=function(){ back?sheet(back):closeSheet(); };
@@ -255,7 +257,7 @@
       b.disabled=true; m.className="msg"; m.textContent="확인 중…";
       var old=ME.code; ME.code=c;
       post({a:"check"}).then(function(j){ ME.name=n; ME.admin=!!j.admin; lsSet("lk_name",n); lsSet("lk_code",c); lsSet("lk_admin",ME.admin?"1":null); back?sheet(back):closeSheet(); },
-        function(e){ ME.code=old; b.disabled=false; m.className="msg err"; m.textContent=e&&e.code==="회사 코드가 맞지 않습니다"?"회사 코드가 맞지 않습니다. 한비로 공지를 확인해 주세요.":"확인하지 못했습니다 ("+(e&&e.code||"연결 오류")+")."; });
+        function(e){ ME.code=old; b.disabled=false; m.className="msg err"; m.textContent=e&&e.code==="회사 코드가 맞지 않습니다"?(/[가-힣]{2,}/.test(c)&&/\s|요$|다$|니다/.test(c)?"회사 코드가 맞지 않습니다. 이 칸에는 남길 글이 아니라 한비로 공지에 적힌 회사 코드를 넣어 주세요. 글은 다음 화면에서 씁니다.":"회사 코드가 맞지 않습니다. 한비로 공지의 코드를 다시 확인해 주세요."):"확인하지 못했습니다 ("+(e&&e.code||"연결 오류")+")."; });
     };
   }
 
@@ -272,7 +274,7 @@
       h+='<div class="sec">한마디 평 <small>'+ns.length+'개</small></div>';
       if(!API) h+='<div class="hint" style="margin-bottom:8px">공유 저장소가 아직 연결되지 않았습니다.</div>';
       else if(canWrite) h+='<div class="write"><textarea id="nTop" rows="2" maxlength="300" placeholder="'+esc(x.p.name)+' 님에게 한마디 ('+esc(ME.name)+' 이름으로 남김)"></textarea><button class="btn pri" type="button" id="nSend">남기기</button></div>';
-      else h+='<div style="margin-bottom:8px"><button class="btn pri" type="button" id="goLogin">한마디 남기기 (이름·회사 코드 입력)</button></div>';
+      else h+='<div style="margin-bottom:8px"><button class="btn pri" type="button" id="goLogin">✍ 한마디 남기기</button></div>';
       if(API && !LOADED) h+='<div class="hint">불러오는 중…</div>';
       else h+=ns.length? ns.map(function(n){
         var reps=repliesOf(n.id);
