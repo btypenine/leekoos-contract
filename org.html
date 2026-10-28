@@ -99,7 +99,9 @@
   .msg.err{color:var(--danger)}
   .banner{max-width:980px;margin:0 auto 12px;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12.5px;color:var(--muted)}
   :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  @media (max-width:560px){ .depts{grid-template-columns:1fr;padding-top:0} .depts::before,.depts .dept::before{display:none} .side{padding-left:8px} .side .dept h2{font-size:12.5px;padding:7px 4px;white-space:nowrap} .side .dept h2 span{display:none} .side .dept ul{padding:6px} .side .dept li{flex-direction:column;text-align:center;gap:4px;padding:6px 2px} .side .dept .tt{white-space:nowrap} }
+  #org{overflow:hidden;position:relative}
+  .orgfix{width:940px;margin:0 auto;transform-origin:top left}
+  .orghint{text-align:center;font-size:12px;color:var(--muted);margin:2px 0 8px}
   @media (prefers-reduced-motion:no-preference){ .box{animation:up .18s ease-out} @keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}} }
   .field{display:block;width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:16px;background:var(--card);color:var(--ink);margin-top:6px}
   .lab{display:block;font-size:13px;font-weight:700;margin-top:14px;text-align:left}
@@ -115,6 +117,12 @@
   .idwarn{font-size:13.5px;line-height:1.5;color:#7a4b00;margin-bottom:6px}
   .idrow{display:flex;gap:8px}.idrow .field{margin-top:0;flex:1;min-width:0}
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .idbox{background:#2d2614;border-color:#6b5320} :root:not([data-theme="light"]) .idwarn{color:#f3d08a} }
+  .okmsg{background:var(--okbg);color:var(--ok);border-radius:10px;padding:9px 12px;font-size:13.5px;font-weight:600;margin-bottom:8px}
+  .prow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px;background:var(--soft)}
+  .prow .field{margin-top:0;font-size:14px;padding:7px 9px}
+  .prow .field[data-f="phone"]{grid-column:span 2}
+  .prow .pops{grid-column:1/-1;display:flex;gap:14px;justify-content:flex-end}
+  .prow .pops .link{font-size:13px}
 </style>
 </head>
 <body>
@@ -146,18 +154,37 @@
   function each(list,fn){ Array.prototype.forEach.call(list,fn); }
 
   // ---------- people ----------
-  var all=[];
-  D.ceo.forEach(function(p){ all.push({p:p,dept:"대표이사",color:"#1f3864"}); });
-  D.exec.forEach(function(p){ all.push({p:p,dept:"임원",color:"#475569"}); });
-  (D.staff||[]).forEach(function(d){ d.members.forEach(function(p){ all.push({p:p,dept:d.name,color:d.color}); }); });
-  D.depts.forEach(function(d){ d.members.forEach(function(p){ all.push({p:p,dept:d.name,color:d.color}); }); });
-  all.forEach(function(x,i){ x.i=i; });
+  // 명단은 구글 시트(people)에서 불러오고, 없으면 이 파일에 들어 있는 명단을 씀
+  var BASEPH={}, COLORS={"대표이사":"#1f3864","임원":"#475569"}, STAFF_NAMES={"경영지원":1},
+      PALETTE=["#7c3aed","#2563eb","#0d9488","#db2777","#d97706","#0891b2","#65a30d","#9333ea","#c2410c","#4f46e5","#be123c","#0f766e"];
+  [D.ceo,D.exec].forEach(function(l){ l.forEach(function(p){ if(p.photo) BASEPH[p.name]=p.photo; }); });
+  (D.staff||[]).concat(D.depts).forEach(function(g){ COLORS[g.name]=g.color; g.members.forEach(function(p){ if(p.photo) BASEPH[p.name]=p.photo; }); });
+  function colorOf(dept){ if(!COLORS[dept]){ var used={}; Object.keys(COLORS).forEach(function(k){ used[COLORS[k]]=1; });
+      var c=PALETTE.filter(function(x){ return !used[x]; })[0]||PALETTE[Object.keys(COLORS).length%PALETTE.length]; COLORS[dept]=c; } return COLORS[dept]; }
+  function rowsFromD(d){ var r=[]; function add(dept,p){ r.push({dept:dept,name:p.name,title:p.title||"",phone:p.phone||"",note:p.note||""}); }
+    d.ceo.forEach(function(p){ add("대표이사",p); }); d.exec.forEach(function(p){ add("임원",p); });
+    (d.staff||[]).concat(d.depts).forEach(function(g){ g.members.forEach(function(p){ add(g.name,p); }); }); return r; }
+  function dFromRows(rows){ var d={ceo:[],exec:[],staff:[],depts:[],updated:D.updated}, idx={};
+    rows.forEach(function(r){ var p={name:r.name,title:r.title||"",phone:r.phone||""}; if(r.note) p.note=r.note; if(BASEPH[r.name]) p.photo=BASEPH[r.name];
+      if(r.dept==="대표이사") d.ceo.push(p); else if(r.dept==="임원") d.exec.push(p);
+      else { if(!idx[r.dept]){ idx[r.dept]={name:r.dept,color:colorOf(r.dept),members:[]}; (STAFF_NAMES[r.dept]?d.staff:d.depts).push(idx[r.dept]); } idx[r.dept].members.push(p); } });
+    return d; }
+  var ROWS=rowsFromD(D), all=[], PEOPLE_EMPTY=false;
+  function buildAll(){ all=[];
+    D.ceo.forEach(function(p){ all.push({p:p,dept:"대표이사",color:"#1f3864"}); });
+    D.exec.forEach(function(p){ all.push({p:p,dept:"임원",color:"#475569"}); });
+    (D.staff||[]).forEach(function(d){ d.members.forEach(function(p){ all.push({p:p,dept:d.name,color:d.color}); }); });
+    D.depts.forEach(function(d){ d.members.forEach(function(p){ all.push({p:p,dept:d.name,color:d.color}); }); });
+    all.forEach(function(x,i){ x.i=i; }); }
+  function setRows(rows, save){ ROWS=rows; D=dFromRows(rows); buildAll(); if(save) lsSet("lk_people",JSON.stringify(rows)); }
+  buildAll();
   function byName(n){ for(var i=0;i<all.length;i++) if(all[i].p.name===n) return all[i]; }
 
   // ---------- this device (이름·코드는 이 기기에만 저장) ----------
   function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
   function lsSet(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){} }
   if(lsGet("lk_api")) API=lsGet("lk_api");
+  try{ var CACHED=JSON.parse(lsGet("lk_people")||"null"); if(CACHED && CACHED.length) setRows(CACHED); }catch(e){}
   var ME={ name:lsGet("lk_name")||"", code:lsGet("lk_code")||"", admin:lsGet("lk_admin")==="1", key:lsGet("lk_key") };
   if(!ME.key){ var r=new Uint8Array(16); (window.crypto||{}).getRandomValues ? crypto.getRandomValues(r) : r.forEach(function(_,i){ r[i]=Math.random()*256|0; });
     ME.key=Array.prototype.map.call(r,function(b){ return ("0"+b.toString(16)).slice(-2); }).join(""); lsSet("lk_key",ME.key); }
@@ -182,7 +209,10 @@
   function load(){
     if(!API) return Promise.resolve();
     return get("a=list").then(function(j){
-      NOTES=j.notes||[]; PHOTOS=j.photos||[]; LOADED=true; $("banner").hidden=true; draw();
+      NOTES=j.notes||[]; PHOTOS=j.photos||[]; LOADED=true; $("banner").hidden=true;
+      PEOPLE_EMPTY=!(j.people && j.people.length);
+      if(!PEOPLE_EMPTY && JSON.stringify(j.people)!==JSON.stringify(ROWS)) setRows(j.people,true);
+      draw();
       var want=[]; all.forEach(function(x){ var h=photosOf(x.p.name); if(h.length && !imgOf(h[0].id)) want.push(h[0].id); });
       return fetchImgs(want);
     }, function(){ $("banner").hidden=false; $("banner").textContent="한마디·사진을 불러오지 못했습니다. 인터넷 연결을 확인하고 잠시 후 다시 열어 주세요."; });
@@ -211,8 +241,21 @@
     h+='<div class="stem"></div>';
     h+='<div class="strow"><div></div><div class="lvl">'+D.exec.map(function(p){ return boss(byName(p.name),"임원"); }).join("")+'</div><div class="side">'+(D.staff||[]).map(function(d){ return '<div class="staff">'+deptBox(d)+'</div>'; }).join("")+'</div></div>';
     h+='<div class="stem"></div><div class="depts">'+D.depts.map(deptBox).join("")+'</div>';
-    $("org").innerHTML=h;
+    $("org").innerHTML='<div class="orghint" id="orgHint" hidden>두 손가락으로 벌리면 크게 볼 수 있습니다</div><div class="orgfix" id="orgFix">'+h+'</div>';
+    fitOrg();
   }
+  // 조직도는 PC와 같은 배치(고정 폭)를 화면 폭에 맞춰 축소 — 확대는 브라우저 손가락 확대로
+  var ORGW=940;
+  function fitOrg(){
+    var box=$("org"), fx=$("orgFix"); if(!fx || box.hidden) return;
+    var w=box.clientWidth; if(!w) return;
+    if(w>=ORGW){ fx.style.transform=""; fx.style.marginLeft=""; box.style.height=""; $("orgHint").hidden=true; return; }
+    var sc=w/ORGW; fx.style.marginLeft="0"; fx.style.transform="scale("+sc+")";
+    $("orgHint").hidden=false;
+    box.style.height=(fx.offsetHeight*sc+$("orgHint").offsetHeight+10)+"px";
+  }
+  window.addEventListener("resize",fitOrg);
+  window.addEventListener("orientationchange",function(){ setTimeout(fitOrg,200); });
   function drawList(){
     var q=($("q").value||"").trim().toLowerCase(), groups={}, order=[];
     all.forEach(function(x){
@@ -232,7 +275,7 @@
   // ---------- sheets ----------
   var OPEN=null;
   function sheet(fn){ OPEN=fn; fn(); $("sheet").hidden=false; }
-  function closeSheet(){ AFL={}; GOPEN=null; OPEN=null; $("sheet").hidden=true; }
+  function closeSheet(){ AFL={}; GOPEN=null; ED=null; OPEN=null; $("sheet").hidden=true; }
   $("sheet").addEventListener("click",function(e){ if(e.target===this) closeSheet(); });
   document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeSheet(); });
 
@@ -266,12 +309,12 @@
   }
 
   // 본인 확인을 글쓰기 자리에서 바로 (이름 선택 + 회사 코드)
-  var IDDRAFT={name:"",code:""};
+  var IDDRAFT={name:"",code:""}, OKMSG="";
   function idBox(){
     return '<div class="idbox"><div class="idwarn">⚠ 아직 <b>본인 확인</b>이 안 됐습니다. 처음 한 번만 이름과 회사 코드를 넣어 주세요.</div>'+
       '<div class="idrow"><select class="field" id="iName"><option value="">내 이름 선택</option>'+all.map(function(x){ return '<option'+(x.p.name===(IDDRAFT.name||ME.name)?' selected':'')+'>'+esc(x.p.name)+'</option>'; }).join("")+'</select>'+
-      '<input class="field" id="iCode" autocomplete="off" autocapitalize="off" placeholder="회사 코드" value="'+esc(IDDRAFT.code)+'"></div>'+
-      '<div class="hint" style="text-align:left;margin-top:8px">회사 코드는 한비로 공지에 있습니다. 모르면 경영지원에 문의해 주세요.</div><div class="msg err" id="imsg"></div></div>';
+      '<input class="field" id="iCode" autocomplete="off" autocapitalize="off" placeholder="회사 코드" value="'+esc(IDDRAFT.code)+'"><button class="btn pri" type="button" id="iOk" style="flex:none">확인</button></div>'+
+      '<div class="hint" style="text-align:left;margin-top:8px">이름과 회사 코드를 넣고 <b>[확인]</b>을 누르세요. 회사 코드는 한비로 공지에 있습니다. 모르면 경영지원에 문의해 주세요.</div><div class="msg err" id="imsg"></div></div>';
   }
   function keepId(){ if($("iName")) IDDRAFT.name=$("iName").value; if($("iCode")) IDDRAFT.code=$("iCode").value; }
   function ensureMe(){
@@ -299,7 +342,7 @@
         '<div class="phone"><span id="num">'+esc(x.p.phone)+'</span><button class="btn" type="button" id="cp">번호 복사</button><a class="btn ok" href="tel:'+tel(x.p.phone)+'">전화</a><a class="btn" href="sms:'+tel(x.p.phone)+'">문자</a></div></div>';
       h+='<div class="sec">한마디 평 <small>'+ns.length+'개</small></div>';
       if(!API) h+='<div class="hint" style="margin-bottom:8px">공유 저장소가 아직 연결되지 않았습니다.</div>';
-      else { if(!signedIn()) h+=idBox();
+      else { if(!signedIn()) h+=idBox(); else if(OKMSG){ h+='<div class="okmsg">✔ '+esc(OKMSG)+'</div>'; OKMSG=""; }
         h+='<div class="write"><textarea id="nTop" rows="2" maxlength="300" placeholder="'+esc(x.p.name)+' 님에게 한마디'+(signedIn()?' ('+esc(ME.name)+' 이름으로 남김)':'')+'"></textarea><button class="btn pri" type="button" id="nSend">남기기</button></div>'; }
       if(API && !LOADED) h+='<div class="hint">불러오는 중…</div>';
       else h+=ns.length? ns.map(function(n){
@@ -317,6 +360,10 @@
       $("cl").onclick=closeSheet;
       $("cp").onclick=function(){ copyNum(x.p.phone,this); };
       box.querySelector(".big").onclick=function(){ sheet(function(){ historySheet(x); }); };
+      if($("iOk")) $("iOk").onclick=function(){ var b=this; b.disabled=true; b.textContent="확인 중…";
+        ensureMe().then(function(){ OKMSG=ME.name+" 님으로 확인됐습니다. 이제 한마디·댓글을 남길 수 있습니다."; render(); var t=$("nTop"); if(t) t.focus(); })
+          .catch(function(){ b.disabled=false; b.textContent="확인"; }); };
+      if($("iCode")) $("iCode").onkeydown=function(e){ if(e.key==="Enter"){ e.preventDefault(); $("iOk").click(); } };
       if($("nSend")) $("nSend").onclick=function(){ var t=$("nTop").value.trim(), b=this; if(!t){ $("nTop").focus(); return; } b.disabled=true;
         ensureMe().then(function(){ return post({a:"note",person:x.p.name,text:t,parent:null}); }).then(function(j){ markMine(j.id); draftTop=""; if($("nTop")) $("nTop").value=""; return load(); }).then(render).catch(fail); };
       each(box.querySelectorAll("[data-reply]"),function(b){ b.onclick=function(){ var id=b.getAttribute("data-reply"); if(drafts[id]===undefined) drafts[id]=""; render(); var t=box.querySelector('textarea[data-rep="'+id+'"]'); if(t) t.focus(); }; });
@@ -398,6 +445,53 @@
 
 
   // ---------- 관리자 화면 (로고 5번 누르기 또는 주소 끝 #admin) ----------
+  // ---------- 인원 관리 (관리자) ----------
+  var ED=null;
+  function peopleEditor(){
+    if(!ED) ED=JSON.parse(JSON.stringify(ROWS));
+    var depts=[]; ED.forEach(function(r){ if(r.dept && depts.indexOf(r.dept)<0) depts.push(r.dept); });
+    ["대표이사","임원","경영지원"].forEach(function(d){ if(depts.indexOf(d)<0) depts.push(d); });
+    var dirty=JSON.stringify(ED)!==JSON.stringify(ROWS);
+    var h='<div class="sec" id="pplSec">⑤ 인원 관리 <small>'+ED.length+'명</small></div>';
+    if(PEOPLE_EMPTY) h+='<div class="idbox"><div class="idwarn">저장소에 아직 명단이 없습니다. 아래 [저장]을 한 번 누르면 지금 명단이 저장소로 옮겨지고, 그다음부터는 여기서 고친 내용이 <b>파일을 다시 올리지 않아도</b> 모두에게 바로 반영됩니다.</div></div>';
+    h+='<div class="hint" style="text-align:left;line-height:1.6">입사·퇴사·직급·연락처·부서를 여기서 고치고 <b>[저장]</b>을 누르면 모두에게 바로 반영됩니다. 부서는 <b>대표이사 / 임원 / 경영지원</b> 또는 부서 이름을 넣으세요. 부서는 위에서 처음 나오는 순서대로 표시됩니다.<br>※ 이름을 바꾸면 그 사람에게 남긴 한마디·사진 이력이 연결되지 않습니다.</div>';
+    h+='<datalist id="deptList">'+depts.map(function(d){ return '<option value="'+esc(d)+'">'; }).join("")+'</datalist>';
+    h+=ED.map(function(r,i){ return '<div class="prow" data-row="'+i+'">'+
+      '<input class="field" data-f="dept" list="deptList" placeholder="부서" value="'+esc(r.dept)+'">'+
+      '<input class="field" data-f="name" placeholder="이름" value="'+esc(r.name)+'">'+
+      '<input class="field" data-f="title" placeholder="직급" value="'+esc(r.title)+'">'+
+      '<input class="field" data-f="phone" placeholder="010-0000-0000" inputmode="tel" value="'+esc(r.phone)+'">'+
+      '<input class="field" data-f="note" placeholder="메모(선택, 예: 생산)" value="'+esc(r.note)+'">'+
+      '<div class="pops"><button class="link" type="button" data-up="'+i+'">▲</button><button class="link" type="button" data-down="'+i+'">▼</button><button class="link del" type="button" data-rm="'+i+'">빼기</button></div></div>'; }).join("");
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" type="button" id="pAdd">＋ 사람 추가</button>'+
+      '<button class="btn pri" type="button" id="pSave"'+(dirty||PEOPLE_EMPTY?'':' disabled')+'>저장 (모두에게 반영)</button>'+
+      (dirty?'<button class="btn" type="button" id="pUndo">되돌리기</button>':'')+'</div><div class="msg" id="amsg5"></div>';
+    return h;
+  }
+  function bindPeopleEditor(say){
+    var box=$("sbox");
+    function rerender(focusSel){ var y=box.scrollTop; adminSheet(); box.scrollTop=y; if(focusSel){ var f=box.querySelector(focusSel); if(f) f.focus(); } }
+    each(box.querySelectorAll(".prow input"),function(inp){ inp.oninput=function(){ var i=+inp.closest(".prow").getAttribute("data-row"); ED[i][inp.getAttribute("data-f")]=inp.value;
+      var sv=$("pSave"); if(sv) sv.disabled=false; }; });
+    each(box.querySelectorAll("[data-up]"),function(b){ b.onclick=function(){ var i=+b.getAttribute("data-up"); if(i>0){ var t=ED[i-1]; ED[i-1]=ED[i]; ED[i]=t; rerender(); } }; });
+    each(box.querySelectorAll("[data-down]"),function(b){ b.onclick=function(){ var i=+b.getAttribute("data-down"); if(i<ED.length-1){ var t=ED[i+1]; ED[i+1]=ED[i]; ED[i]=t; rerender(); } }; });
+    each(box.querySelectorAll("[data-rm]"),function(b){ b.onclick=function(){
+      if(b.getAttribute("data-sure")!=="1"){ b.setAttribute("data-sure","1"); b.textContent="한 번 더 누르면 빼기"; return; }
+      ED.splice(+b.getAttribute("data-rm"),1); rerender(); }; });
+    if($("pAdd")) $("pAdd").onclick=function(){ ED.push({dept:"",name:"",title:"",phone:"",note:""}); rerender('.prow[data-row="'+(ED.length-1)+'"] input[data-f="dept"]'); };
+    if($("pUndo")) $("pUndo").onclick=function(){ ED=null; AFL["amsg5"]=null; delete AFL["amsg5"]; rerender(); };
+    if($("pSave")) $("pSave").onclick=function(){ var b=this;
+      var rows=ED.map(function(r){ return {dept:String(r.dept||"").trim(),name:String(r.name||"").trim(),title:String(r.title||"").trim(),phone:String(r.phone||"").trim(),note:String(r.note||"").trim()}; })
+        .filter(function(r){ return r.dept||r.name||r.title||r.phone; });
+      var bad=rows.filter(function(r){ return !r.dept||!r.name; })[0];
+      if(bad){ say("amsg5","부서와 이름은 꼭 넣어 주세요. ("+(bad.name||bad.dept||"빈 줄")+")",1); return; }
+      var seen={}, dup=rows.filter(function(r){ if(seen[r.name]) return true; seen[r.name]=1; })[0];
+      if(dup){ say("amsg5","같은 이름이 두 번 있습니다: "+dup.name+" (구분되게 이름을 바꿔 주세요)",1); return; }
+      if(!rows.length){ say("amsg5","명단이 비어 있습니다.",1); return; }
+      b.disabled=true; say("amsg5","저장 중…");
+      post({a:"people",people:rows}).then(function(){ setRows(rows,true); PEOPLE_EMPTY=false; ED=null; say("amsg5","저장했습니다. 모두에게 바로 반영됩니다. ("+rows.length+"명)"); draw(); return load(); })
+        .catch(function(e){ b.disabled=false; say("amsg5","저장하지 못했습니다 ("+(e&&e.code||"오류")+"). 구글 스크립트를 새 버전으로 배포했는지 확인해 주세요.",1); }); };
+  }
   var AFL={}, GOPEN=null;
   function adminSheet(){
     var isAdmin=signedIn() && ME.admin;
@@ -416,7 +510,7 @@
         '<li><b>사진 지우기</b>: 사람 누르기 → 큰 사진 누르기(이력) → 사진 아래 [삭제]</li>'+
         '<li><b>코드가 새어 나갔을 때</b>: ③에서 글쓰기 코드만 바꾸고 한비로 공지 수정. 직원은 다음 글쓰기 때 새 코드를 한 번 입력</li>'+
         '<li><b>원본 데이터</b>: 구글 드라이브의 「리쿠스 조직도 데이터」 시트·「리쿠스 조직도 사진」 폴더 (시트 칸 이름·순서는 바꾸지 말 것)</li>'+
-        '<li><b>입사·퇴사·직급·연락처 변경</b>: 조직도 명단은 페이지에 들어 있어 Claude에게 수정 요청 → 새 org.html을 GitHub에 덮어 올리기 (기존 한마디·사진은 그대로 유지)</li></ul></details>'+
+        '<li><b>입사·퇴사·직급·연락처·부서 변경</b>: 아래 <b>⑤ 인원 관리</b>에서 고치고 [저장] → 모두에게 바로 반영 (파일 업로드 필요 없음). 새로 온 사람 사진은 본인이 올리거나 관리자가 올리면 됩니다. 구글 시트 「리쿠스 조직도 데이터」의 people 탭을 직접 고쳐도 됩니다.</li></ul></details>'+
       '<details><summary>🛠 문제가 생기면</summary><ul>'+
         '<li><b>“한마디·사진을 불러오지 못했습니다”</b>: 인터넷 확인 → ① 상태가 「연결됨」인지 확인. 아니면 구글 배포의 액세스가 <b>모든 사용자</b>인지 확인</li>'+
         '<li><b>Code.gs를 고친 뒤 반영이 안 됨</b>: 배포 → 배포 관리 → ✏ 수정 → 버전 <b>새 버전</b> → 배포 (주소는 그대로)</li>'+
@@ -441,6 +535,7 @@
       var ns=NOTES.slice().sort(function(a,b){ return String(b.at).localeCompare(String(a.at)); });
       h+='<div class="sec">④ 전체 글·댓글 <small>'+ns.length+'개 · 사진 '+PHOTOS.length+'장</small></div>';
       h+=ns.length?ns.map(function(n){ return '<div class="note"><div class="by"><b>'+esc(n.by)+'</b> → '+esc(n.person)+(n.parent?' (댓글)':'')+' · '+esc(fmt(n.at))+'</div><div class="tx">'+esc(n.text)+'</div><div class="ops"><button class="link del" type="button" data-adel="'+esc(n.id)+'">삭제</button></div></div>'; }).join(""):'<div class="hint">아직 글이 없습니다.</div>';
+      h+=peopleEditor();
       h+='<div class="hint" style="margin-top:8px">사진 삭제는 사람을 눌러 → 사진 → 이력에서 할 수 있습니다.</div>';
     }
     h+='<button class="btn close" type="button" id="cl">닫기</button>';
@@ -476,6 +571,7 @@
     each($("sbox").querySelectorAll("[data-adel]"),function(b){ b.onclick=function(){
       if(b.getAttribute("data-sure")!=="1"){ b.setAttribute("data-sure","1"); b.textContent="한 번 더 누르면 삭제"; return; }
       b.disabled=true; post({a:"del",id:b.getAttribute("data-adel")}).then(load).catch(function(e){ b.disabled=false; alertMsg(e); }); }; });
+    if(isAdmin) bindPeopleEditor(say);
     function alertMsg(e){ say("amsg2","삭제하지 못했습니다 ("+(e&&e.code||"오류")+")",1); }
   }
   var TAPS=[]; document.querySelector(".top img").addEventListener("click",function(){ var t=Date.now(); TAPS=TAPS.filter(function(x){ return t-x<3000; }); TAPS.push(t); if(TAPS.length>=5){ TAPS=[]; sheet(adminSheet); load(); } });
@@ -487,7 +583,7 @@
     var el=e.target.closest("[data-i]"); if(el){ var x=all[+el.getAttribute("data-i")]; sheet(function(){ personSheet(x); }); }
   });
   document.addEventListener("keydown",function(e){ if(e.key==="Enter"){ var el=e.target.closest&&e.target.closest("[data-i]"); if(el && !e.target.closest(".sheet")){ var x=all[+el.getAttribute("data-i")]; sheet(function(){ personSheet(x); }); } } });
-  function tab(t){ $("tOrg").classList.toggle("on",t==="org"); $("tList").classList.toggle("on",t==="list"); $("org").hidden=t!=="org"; $("list").hidden=t!=="list"; }
+  function tab(t){ $("tOrg").classList.toggle("on",t==="org"); $("tList").classList.toggle("on",t==="list"); $("org").hidden=t!=="org"; $("list").hidden=t!=="list"; if(t==="org") fitOrg(); }
   $("tOrg").onclick=function(){ tab("org"); }; $("tList").onclick=function(){ tab("list"); };
   $("q").addEventListener("input",function(){ if(this.value.trim()) tab("list"); drawList(); });
   $("gear").onclick=function(){ sheet(settingsSheet); };
